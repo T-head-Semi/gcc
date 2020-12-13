@@ -457,6 +457,7 @@ typedef unsigned char uchar;
 #include "align.h"
 /* Most host source files will require the following headers.  */
 #if !defined (GENERATOR_FILE)
+#include "iterator-utils.h"
 #include "real.h"
 #include "fixed-value.h"
 #include "hash-table.h"
