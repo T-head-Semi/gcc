@@ -993,6 +993,8 @@ calc_wider_mode (void)
 #define ZERO_COEFFS ""
 #elif NUM_POLY_INT_COEFFS == 2
 #define ZERO_COEFFS ", 0"
+#elif NUM_POLY_INT_COEFFS == 3
+#define ZERO_COEFFS ", 0, 0"
 #else
 #error "Unknown value of NUM_POLY_INT_COEFFS"
 #endif

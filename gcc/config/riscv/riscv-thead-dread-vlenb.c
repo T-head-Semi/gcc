@@ -98,7 +98,7 @@ delete_redundant_read_vlenb(void)
 
 	  /* Refer to riscv.c:riscv_output_move. */
 	  if (GET_CODE (dest) == REG && GP_REG_P (REGNO (dest))
-	      && GET_CODE (src) == CONST_POLY_INT)
+	      && GET_CODE (src) == CONST_POLY_INT && satisfies_constraint_vp (src))
 	    {
 	      if (!first_read_vlenb)
 		{

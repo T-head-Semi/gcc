@@ -125,6 +125,35 @@
   UNSPEC_VSETVL
   UNSPEC_VWLDST
 
+  ;; Matrix unspecs.
+  UNSPEC_SET_MSIZE
+  UNSPEC_USE_MSIZE
+  UNSPEC_MRELEASE
+  UNSPEC_MZERO
+  UNSPEC_READ_MLENB
+  UNSPEC_READ_MREGSIZE
+  UNSPEC_MLD_MST
+  UNSPEC_MLD_MST_STREAM
+  UNSPEC_MMOVE
+  UNSPEC_MADD
+  UNSPEC_MSUB
+  UNSPEC_MSRA
+  UNSPEC_MN4CLIP
+  UNSPEC_MN4CLIPU
+  UNSPEC_MMUL
+  UNSPEC_MMULH
+  UNSPEC_FMMACC
+  UNSPEC_FWMMACC
+  UNSPEC_MMAQASS
+  UNSPEC_MMAQAUU
+  UNSPEC_MMAQAUS
+  UNSPEC_MMAQASU
+  UNSPEC_PMMAQASS
+  UNSPEC_PMMAQAUU
+  UNSPEC_PMMAQAUS
+  UNSPEC_PMMAQASU
+  UNSPEC_WHOLE_SL
+
   ;; Segment load/store
   UNSPEC_SEG_STORE
   UNSPEC_SEG_UNORDERED_STORE
@@ -177,6 +206,10 @@
 
    (VL_REGNUM			66)
    (VTYPE_REGNUM		67)
+
+   (MSIZE_M_REGNUM		68)
+   (MSIZE_N_REGNUM		69)
+   (MSIZE_K_REGNUM		70)
 
    (NORMAL_RETURN		0)
    (SIBCALL_RETURN		1)
@@ -267,6 +300,7 @@
    vfadd,vfsgnj,vfmul,vfwmul,vfmadd,vfwmadd,vfred,vfmove,vfmax,vfcmp,vfcvt,
    vfdiv,vfsqrt,vfrec,vfclass,
 
+   mset,mload,mstore,mmove,matrix,
    idivmod"
   (cond [(eq_attr "got" "load") (const_string "load")
 
@@ -550,6 +584,7 @@
   "nothing")
 
 (include "riscv-thead.md")
+(include "riscv-matrix.md")
 
 ;;
 ;;  ....................
@@ -1539,23 +1574,23 @@
 })
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r, r,r,m,  *f,*f,*r,*f,*m")
-	(match_operand:DI 1 "move_operand"         " r,i,vp,m,r,*J*r,*m,*f,*f,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r, r, r,r,m,  *f,*f,*r,*f,*m")
+	(match_operand:DI 1 "move_operand"         " r,i,vp,xp,m,r,*J*r,*m,*f,*f,*f"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,const,load,store,mtc,fpload,mfc,fmove,fpstore")
+  [(set_attr "move_type" "move,const,const,const,load,store,mtc,fpload,mfc,fmove,fpstore")
    (set_attr "mode" "DI")])
 
 (define_insn "*movdi_64bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r, r,r,  m,  *f,*f,*r,*f,*m")
-	(match_operand:DI 1 "move_operand"         " r,T,vp,m,rJ,*r*J,*m,*f,*f,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r, r, r,r,  m,  *f,*f,*r,*f,*m")
+	(match_operand:DI 1 "move_operand"         " r,T,vp,xp,m,rJ,*r*J,*m,*f,*f,*f"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,const,load,store,mtc,fpload,mfc,fmove,fpstore")
+  [(set_attr "move_type" "move,const,const,const,load,store,mtc,fpload,mfc,fmove,fpstore")
    (set_attr "mode" "DI")])
 
 ;; 32-bit Integer moves

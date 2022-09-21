@@ -196,6 +196,8 @@ Mask(XTHEAD_SE)
 
 Mask(XTHEAD_V)
 
+Mask(MATRIX)
+
 ; T-Head extension
 
 mldr

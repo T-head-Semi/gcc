@@ -1014,6 +1014,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheade", &gcc_options::x_target_flags, MASK_XTHEAD_E | MASK_XTHEAD},
   {"xtheadse", &gcc_options::x_target_flags, MASK_XTHEAD_SE |MASK_XTHEAD},
   {"xtheadvdot", &gcc_options::x_target_flags, MASK_XTHEAD_V |MASK_XTHEAD},
+  {"xtheadmatrix", &gcc_options::x_target_flags, MASK_MATRIX | MASK_XTHEAD},
   {"p", &gcc_options::x_target_flags, MASK_DSP},
   {"zpn", &gcc_options::x_target_flags, MASK_ZPN},
   {"zpsfoperand", &gcc_options::x_target_flags, MASK_ZPSFOPERAND},

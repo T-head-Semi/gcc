@@ -111,10 +111,11 @@ ASM_MISA_SPEC
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
+/* How to renumber registers for dbx and gdb.  */
+#define DBX_REGISTER_NUMBER(REGNO) riscv_dbx_register_number (REGNO)
+
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
-#define DWARF_FRAME_REGNUM(REGNO) \
-  (GP_REG_P (REGNO) || FP_REG_P (REGNO) || VECT_REG_P (REGNO)	\
-   ? REGNO : INVALID_REGNUM)
+#define DWARF_FRAME_REGNUM(REGNO) DBX_REGISTER_NUMBER(REGNO)
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN RETURN_ADDR_REGNUM
@@ -143,6 +144,7 @@ ASM_MISA_SPEC
 /* The `Q' extension is not yet supported.  */
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 #define UNITS_PER_V_REG (GET_MODE_SIZE (VNx2DImode))
+#define UNITS_PER_M_REG (GET_MODE_SIZE (E_M64QImode))
 
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
@@ -295,8 +297,10 @@ ASM_MISA_SPEC
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Others.  */							\
-  1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1,   \
+  /* Matrix registers.  */						\
+  0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Vector registers.  */						\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0			\
@@ -314,7 +318,9 @@ ASM_MISA_SPEC
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,			\
   /* Others.  */							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1,       \
+  /* Matrix registers.  */						\
+  1, 1, 1, 1, 1, 1, 1, 1,			\
   /* Vector registers.  */						\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1			\
@@ -341,6 +347,10 @@ ASM_MISA_SPEC
 #define VECT_REG_LAST  127
 #define VECT_REG_NUM   (VECT_REG_LAST - VECT_REG_FIRST + 1)
 
+#define MATRIX_REG_FIRST 88
+#define MATRIX_REG_LAST  95
+#define MATRIX_REG_NUM   (MATRIX_REG_LAST - MATRIX_REG_FIRST + 1)
+
 /* The DWARF 2 CFA column which tracks the return address from a
    signal handler context.  This means that to maintain backwards
    compatibility, no hard register can be assigned this column if it
@@ -353,6 +363,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define VECT_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - VECT_REG_FIRST) < VECT_REG_NUM)
+#define MATRIX_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - MATRIX_REG_FIRST) < MATRIX_REG_NUM)
 
 /* True when REGNO is in SIBCALL_REGS set.  */
 #define SIBCALL_REG_P(REGNO)	\
@@ -374,6 +386,11 @@ ASM_MISA_SPEC
    operations.  */
 #define VECTOR_LENGTH_REGNUM 66
 #define VECTOR_TYPE_REGNUM 67
+
+#define MATRIX_SIZE_M_REGNUM 68
+#define MATRIX_SIZE_N_REGNUM 69
+#define MATRIX_SIZE_K_REGNUM 70
+#define MATRIX_SIZE_REG_P(REGNO) ((unsigned int) ((int) (REGNO) - MATRIX_SIZE_M_REGNUM) < 3)
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
@@ -447,6 +464,9 @@ enum reg_class
   VECTOR_NO_MASK_REGS,		/* vector registers except mask registers */
   VECTOR_REGS,			/* vector registers */
   VTYPE_REGS,			/* vype register */
+  MATRIX_GR_REGS,
+  MATRIX_REGS,			/* matrix register */
+  MATRIX_MSIZE_REGS, /* msize register */
   ALL_REGS,			/* all registers */
   LIM_REG_CLASSES		/* max value + 1 */
 };
@@ -471,6 +491,9 @@ enum reg_class
   "VECTOR_NO_MASK_REGS", 						\
   "VECTOR_REGS", 							\
   "VTYPE_REGS", 							\
+  "MATRIX_GR_REGS", 							\
+  "MATRIX_REGS", 							\
+  "MATRIX_MSIZE_REGS",      \
   "ALL_REGS"								\
 }
 
@@ -497,7 +520,10 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0xfffffffe },	/* VECTOR_REGS */\
   { 0x00000000, 0x00000000, 0x00000000, 0xffffffff },	/* VECTOR_REGS */\
   { 0x00000000, 0x00000000, 0x00000008, 0x00000000 },	/* VTYPE_REGS */\
-  { 0xffffffff, 0xffffffff, 0x0000000f, 0xffffffff }	/* ALL_REGS */		\
+  { 0x0000ff00, 0x00000000, 0x00000000, 0x00000000 },	/* MATRIX_GR_REGS */\
+  { 0x00000000, 0x00000000, 0xff000000, 0x00000000 },	/* MATRIX_REGS */\
+  { 0x00000000, 0x00000000, 0x00000070, 0x00000000 },	/* MATRIX_MSIZE_REGS */\
+  { 0xffffffff, 0xffffffff, 0xff00007f, 0xffffffff }	/* ALL_REGS */		\
 }
 
 /* A C expression whose value is a register class containing hard
@@ -543,9 +569,11 @@ enum reg_class
   124, 125, 126, 127,							\
   /* The vector mask register.  */					\
   96,									\
+  /* Matrix register.  */					\
+  88, 89, 90, 91, 92, 93, 94, 95, 			\
   /* None of the remaining classes have defined call-saved		\
      registers.  */							\
-  64, 65, 66, 67							\
+  64, 65, 66, 67, 68, 69, 70							\
 }
 
 /* True if VALUE is a signed 12-bit number.  */
@@ -828,14 +856,14 @@ typedef struct {
   "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",	\
   "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",	\
   "fs8", "fs9", "fs10","fs11","ft8", "ft9", "ft10","ft11",	\
-  "arg", "frame","vl","vtype","N/A", "N/A", "N/A", "N/A",	\
+  "arg", "frame","vl","vtype", "msize_m", "msize_n", "msize_k", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", 	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", 	\
-  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", 	\
+  "m0", "m1", "m2", "m3", "m4", "m5", "m6", "m7",      \
   "v0",  "v1",  "v2",  "v3",  "v4",  "v5",  "v6",  "v7",	\
   "v8",  "v9",  "v10", "v11", "v12", "v13", "v14", "v15",	\
   "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",	\
-  "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31" 	\
+  "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31" \
 }
 
 #define ADDITIONAL_REGISTER_NAMES					\
@@ -1067,10 +1095,15 @@ extern void riscv_optimize_quiet_comparison (void);
 
 #ifndef USED_FOR_TARGET
 extern poly_uint16 riscv_rvv_chunks;
+extern poly_uint16 riscv_rvm_chunks;
 
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RVV_VECTOR (poly_uint16 (riscv_rvv_chunks * 64))
 #define BYTES_PER_RVV_VECTOR (poly_uint16 (riscv_rvv_chunks * 8))
+
+/* The number of bits and bytes in a RVM matrix.  */
+#define BITS_PER_RVM_MATRIX (poly_uint16 (riscv_rvm_chunks * 64))
+#define BYTES_PER_RVM_MATRIX (poly_uint16 (riscv_rvm_chunks * 8))
 #endif
 
 /* Minimal value of VLEN in bytes.  */
@@ -1082,6 +1115,7 @@ extern poly_uint16 riscv_rvv_chunks;
 #define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
 
 #define RISCV_DWARF_VLEN (4096 + 0xc22)
+#define RISCV_DWARF_XMREGSIZE (4096 + 0xcc2)
 
 #ifdef HAVE_POLY_INT_H
 /* Information about a function's frame layout.  */

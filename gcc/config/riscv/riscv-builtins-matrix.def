@@ -1,0 +1,177 @@
+DIRECT_NAMED(matrix_mcfg, matrix_mcfg, RISCV_USI_FTYPE_USI, matrix),
+DIRECT_NAMED(matrix_mcfg_m, matrix_mcfgm, RISCV_USI_FTYPE_UQI, matrix),
+DIRECT_NAMED(matrix_mcfg_n, matrix_mcfgn, RISCV_USI_FTYPE_UQI, matrix),
+DIRECT_NAMED(matrix_mcfg_k, matrix_mcfgk, RISCV_USI_FTYPE_UHI, matrix),
+
+#define _MLOAD_STORE_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mld_## mode ##_di, matrix_mld_di_## type, RISCV_## RETURN ##_FTYPE_## ARGS ##_DI, matrix), \
+  DIRECT_NAMED (matrix_mld_## mode ##_si, matrix_mld_si_## type, RISCV_## RETURN ##_FTYPE_## ARGS ##_SI, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mst_## mode ##_di, matrix_mst_di_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS ##_DI, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mst_## mode ##_si, matrix_mst_si_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS ##_SI, matrix), \
+  \
+  DIRECT_NAMED (matrix_msld_## mode ##_di, matrix_msld_di_## type, RISCV_## RETURN ##_FTYPE_## ARGS ##_DI, matrix), \
+  DIRECT_NAMED (matrix_msld_## mode ##_si, matrix_msld_si_## type, RISCV_## RETURN ##_FTYPE_## ARGS ##_SI, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_msst_## mode ##_di, matrix_msst_di_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS ##_DI, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_msst_## mode ##_si, matrix_msst_si_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS ##_SI, matrix),
+
+_MLOAD_STORE_BUILTINS(m8di, int64, MINT64, C_DI_PTR)
+_MLOAD_STORE_BUILTINS(m16si, int32, MINT32, C_SI_PTR)
+_MLOAD_STORE_BUILTINS(m32hi, int16, MINT16, C_HI_PTR)
+_MLOAD_STORE_BUILTINS(m64qi, int8, MINT8, C_QI_PTR)
+
+_MLOAD_STORE_BUILTINS(m8di, uint64, MUINT64, C_UDI_PTR)
+_MLOAD_STORE_BUILTINS(m16si, uint32, MUINT32, C_USI_PTR)
+_MLOAD_STORE_BUILTINS(m32hi, uint16, MUINT16, C_UHI_PTR)
+_MLOAD_STORE_BUILTINS(m64qi, uint8, MUINT8, C_UQI_PTR)
+
+_MLOAD_STORE_BUILTINS(m8df, float64, MFLOAT64, C_DF_PTR)
+_MLOAD_STORE_BUILTINS(m16sf, float32, MFLOAT32, C_SF_PTR)
+_MLOAD_STORE_BUILTINS(m32hf, float16, MFLOAT16, C_HF_PTR)
+
+_MLOAD_STORE_BUILTINS(x2_m2x8df, x2_float64, MFLOAT64X2, C_DF_PTR_C_DF_PTR)
+_MLOAD_STORE_BUILTINS(x2_m2x16sf, x2_float32, MFLOAT32X2, C_SF_PTR_C_SF_PTR)
+_MLOAD_STORE_BUILTINS(x2_m2x32hf, x2_float16, MFLOAT16X2, C_HF_PTR_C_HF_PTR)
+
+#define _M_WHOLE_1M_LOAD_STORE_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mldm_## mode ##_di, matrix_mld1m_di_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix), \
+  DIRECT_NAMED (matrix_mldm_## mode ##_si, matrix_mld1m_si_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mstm_## mode ##_di, matrix_mst1m_di_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mstm_## mode ##_si, matrix_mst1m_si_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS, matrix),
+
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m8di, int64, MINT64, C_DI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m16si, int32, MINT32, C_SI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m32hi, int16, MINT16, C_HI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m64qi, int8, MINT8, C_QI_PTR)
+
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m8di, uint64, MUINT64, C_UDI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m16si, uint32, MUINT32, C_USI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m32hi, uint16, MUINT16, C_UHI_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m64qi, uint8, MUINT8, C_UQI_PTR)
+
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m8df, float64, MFLOAT64, C_DF_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m16sf, float32, MFLOAT32, C_SF_PTR)
+_M_WHOLE_1M_LOAD_STORE_BUILTINS(m32hf, float16, MFLOAT16, C_HF_PTR)
+
+#define _M_WHOLE_2M_LOAD_STORE_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mldm_## mode ##_di, matrix_mld2m_di_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix), \
+  DIRECT_NAMED (matrix_mldm_## mode ##_si, matrix_mld2m_si_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mstm_## mode ##_di, matrix_mst2m_di_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS, matrix), \
+  DIRECT_NAMED_NO_TARGET (matrix_mstm_## mode ##_si, matrix_mst2m_si_## type, RISCV_VOID_FTYPE_## RETURN ##_## ARGS, matrix),
+
+_M_WHOLE_2M_LOAD_STORE_BUILTINS(m2x8df, float64, MFLOAT64X2, C_DF_PTR)
+_M_WHOLE_2M_LOAD_STORE_BUILTINS(m2x16sf, float32, MFLOAT32X2, C_SF_PTR)
+_M_WHOLE_2M_LOAD_STORE_BUILTINS(m2x32hf, float16, MFLOAT16X2, C_HF_PTR)
+
+#define _MINT_MOV_BUILTINS(mode, type, RETURN, ARGS, instr)			\
+  DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN, matrix), \
+  DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_## type, RISCV_M## RETURN ##_FTYPE_## ARGS, matrix), \
+  \
+  DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN, matrix), \
+  DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_u## type, RISCV_MU## RETURN ##_FTYPE_U## ARGS, matrix),
+
+#define _MFLOAT_MOV_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_## type, RISCV_## RETURN ##_FTYPE_## RETURN, matrix), \
+  DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_## type, RISCV_## RETURN ##_FTYPE_## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix),
+
+_MFLOAT_MOV_BUILTINS(m8df, float64, MFLOAT64, DF)
+_MFLOAT_MOV_BUILTINS(m16sf, float32, MFLOAT32, SF)
+_MFLOAT_MOV_BUILTINS(m32hf, float16, MFLOAT16, HF)
+
+
+#define _MFLOAT_MOV_X2_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mmov_mm_x2_## mode, matrix_mmov_mm_x2_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix),
+
+_MFLOAT_MOV_X2_BUILTINS(m2x8df_m8df, float64, MFLOAT64X2, MFLOAT64_MFLOAT64)
+_MFLOAT_MOV_X2_BUILTINS(m2x16sf_m16sf, float32, MFLOAT32X2, MFLOAT32_MFLOAT32)
+_MFLOAT_MOV_X2_BUILTINS(m2x32hf_m32hf, float16, MFLOAT16X2, MFLOAT16_MFLOAT16)
+
+#define _MINT_AUL_BUILTINS(mode, type, RETURN, ARGS, instr)			\
+  DIRECT_NAMED (matrix_## instr ##_mm_## mode, matrix_## instr ##_mm_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_M##  RETURN, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mv_## mode, matrix_## instr ##_mv_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_M##  RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mx_## mode ##_## type, matrix_## instr ##_mx_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_## ARGS, matrix), \
+  \
+  DIRECT_NAMED (matrix_## instr ##_mm_## mode, matrix_## instr ##_mm_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_MU## RETURN, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mv_## mode, matrix_## instr ##_mv_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_MU## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mx_## mode ##_## type, matrix_## instr ##_mx_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_U## ARGS, matrix),
+
+#define _MATRIX_ALU_BULITINS_ITERATOR(MACRO, ...) \
+  MACRO(m64qi, int8, INT8, QI, __VA_ARGS__)                        \
+  MACRO(m32hi, int16, INT16, HI, __VA_ARGS__)                      \
+  MACRO(m16si, int32, INT32, SI, __VA_ARGS__)                      \
+  MACRO(m8di, int64, INT64, DI, __VA_ARGS__)
+
+_MATRIX_ALU_BULITINS_ITERATOR(_MINT_MOV_BUILTINS, mmov)
+_MATRIX_ALU_BULITINS_ITERATOR(_MINT_AUL_BUILTINS, madd)
+_MATRIX_ALU_BULITINS_ITERATOR(_MINT_AUL_BUILTINS, msub)
+_MATRIX_ALU_BULITINS_ITERATOR(_MINT_AUL_BUILTINS, mmul)
+_MATRIX_ALU_BULITINS_ITERATOR(_MINT_AUL_BUILTINS, mmulh)
+
+#define _MINT_SHIFT_BUILTINS(instr, mode, type, RETURN, ARGS1, ARGS2)			\
+  DIRECT_NAMED (matrix_## instr ##_mm_## mode, matrix_## instr ##_mm_## type, RISCV_## RETURN ##_FTYPE_## ARGS1, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mv_## mode, matrix_## instr ##_mv_## type, RISCV_## RETURN ##_FTYPE_## ARGS1 ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_## instr ##_mx_## mode ##_## type, matrix_## instr ##_mx_## type, RISCV_## RETURN ##_FTYPE_## ARGS2, matrix),
+
+_MINT_SHIFT_BUILTINS(msra, m16si, int32, MINT32, MINT32_MUINT32, MINT32_USI)
+_MINT_SHIFT_BUILTINS(msra, m8di, int64, MINT64, MINT64_MUINT64, MINT64_UDI)
+
+_MINT_SHIFT_BUILTINS(mn4clip, m16si, int32, MINT8, MINT32_MUINT32, MINT32_USI)
+_MINT_SHIFT_BUILTINS(mn4clip, m8di, int64, MINT8, MINT64_MUINT64, MINT64_UDI)
+
+_MINT_SHIFT_BUILTINS(mn4clipu, m16si, int32, MUINT8, MUINT32_MUINT32, MUINT32_USI)
+_MINT_SHIFT_BUILTINS(mn4clipu, m8di, int64, MUINT8, MUINT64_MUINT64, MUINT64_UDI)
+
+
+#define _MINT_FP_MMUL_BUILTINS(instr, mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_## instr ##_## mode, matrix_## instr ##_## type, RISCV_## RETURN ##_FTYPE_## RETURN ##_## ARGS, matrix),
+
+
+_MINT_FP_MMUL_BUILTINS(fmmacc, m32hf_m32hf_m2x32hf, float16, MFLOAT16, MFLOAT16_MFLOAT16X2)
+_MINT_FP_MMUL_BUILTINS(fmmacc, m16sf_m16sf_m16sf, float32, MFLOAT32, MFLOAT32_MFLOAT32)
+_MINT_FP_MMUL_BUILTINS(fmmacc, m2x8df_m8df_m8df, float64, MFLOAT64X2, MFLOAT64_MFLOAT64)
+
+
+_MINT_FP_MMUL_BUILTINS(fwmmacc, m16sf_m32hf_m32hf, float16, MFLOAT32, MFLOAT16_MFLOAT16)
+_MINT_FP_MMUL_BUILTINS(fwmmacc, m2x8df_m16sf_m16sf, float32, MFLOAT64X2, MFLOAT32_MFLOAT32)
+
+
+_MINT_FP_MMUL_BUILTINS(mmaqa, m16si_m64qi, int8, MINT32, MINT8_MINT8)
+_MINT_FP_MMUL_BUILTINS(mmaqa, m8di_m32hi, int16, MINT64, MINT16_MINT16)
+_MINT_FP_MMUL_BUILTINS(mmaqau, m16si_m64qi, int8, MINT32, MUINT8_MUINT8)
+_MINT_FP_MMUL_BUILTINS(mmaqau, m8di_m32hi, int16, MINT64, MUINT16_MUINT16)
+_MINT_FP_MMUL_BUILTINS(mmaqaus, m16si_m64qi, int8, MINT32, MUINT8_MINT8)
+_MINT_FP_MMUL_BUILTINS(mmaqaus, m8di_m32hi, int16, MINT64, MUINT16_MINT16)
+_MINT_FP_MMUL_BUILTINS(mmaqasu, m16si_m64qi, int8, MINT32, MINT8_MUINT8)
+_MINT_FP_MMUL_BUILTINS(mmaqasu, m8di_m32hi, int16, MINT64, MINT16_MUINT16)
+
+
+_MINT_FP_MMUL_BUILTINS(pmmaqa, m16si_m64qi, int8, MINT32, MINT8_MINT8)
+_MINT_FP_MMUL_BUILTINS(pmmaqau, m16si_m64qi, int8, MINT32, MUINT8_MUINT8)
+_MINT_FP_MMUL_BUILTINS(pmmaqaus, m16si_m64qi, int8, MINT32, MUINT8_MINT8)
+_MINT_FP_MMUL_BUILTINS(pmmaqasu, m16si_m64qi, int8, MINT32, MINT8_MUINT8)
+
+DIRECT_NAMED_NO_TARGET(matrix_mrelease, matrix_mrelease, RISCV_VOID_FTYPE, matrix),
+
+#define _RVM_ALL_MATRIX_TYPE_ITERATOR(MACRO, ...) \
+  MACRO(m8di, mi64, MINT64)                        \
+  MACRO(m16si, mi32, MINT32)                        \
+  MACRO(m32hi, mi16, MINT16)                        \
+  MACRO(m64qi, mi8, MINT8)                        \
+  MACRO(m8di, mui64, MUINT64)                        \
+  MACRO(m16si, mui32, MUINT32)                        \
+  MACRO(m32hi, mui16, MUINT16)                        \
+  MACRO(m64qi, mui8, MUINT8)                        \
+  MACRO(m8df, mf64, MFLOAT64)                        \
+  MACRO(m16sf, mf32, MFLOAT32)                        \
+  MACRO(m32hf, mf16, MFLOAT16)                        \
+  MACRO(m2x8df, mf64x2, MFLOAT64X2)                        \
+  MACRO(m2x16sf, mf32x2, MFLOAT32X2)                        \
+  MACRO(m2x32hf, mf16x2, MFLOAT16X2)
+
+#define __MATRIX_UNDEFINED_ZERO(mmode, type, TYPE)   \
+  DIRECT_NAMED (matrix_mundefined_##mmode, matrix_mundefined_##type, RISCV_##TYPE##_FTYPE, matrix), \
+  DIRECT_NAMED(matrix_mzero_##mmode, matrix_mzero_##type, RISCV_##TYPE##_FTYPE, matrix),
+
+_RVM_ALL_MATRIX_TYPE_ITERATOR(__MATRIX_UNDEFINED_ZERO,)

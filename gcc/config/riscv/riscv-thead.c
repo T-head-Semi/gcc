@@ -660,6 +660,52 @@ riscv_iv_gen_load_index (HOST_WIDE_INT loop_niter,
 }
 
 
+/* Nonzero if MODE is a matrix mode. */
+
+bool
+riscv_matrix_mode(machine_mode mode)
+{
+  switch (mode)
+  {
+  case E_M64QImode:
+  case E_M32HImode:
+  case E_M16SImode:
+  case E_M8DImode:
+  case E_M4TImode:
+  case E_M32HFmode:
+  case E_M16SFmode:
+  case E_M8DFmode:
+  case E_M4TFmode:
+  case E_M2x32HFmode:
+  case E_M2x16SFmode:
+  case E_M2x8DFmode:
+  case E_M2x4TFmode:
+    return true;
+  default:
+    break;
+  }
+
+  return false;
+}
+
+/* Nonzero if MODE is a matrix mode with 2 nregs. */
+
+bool
+riscv_matrix_x2_mode(machine_mode mode)
+{
+  switch (mode)
+  {
+  case E_M2x32HFmode:
+  case E_M2x16SFmode:
+  case E_M2x8DFmode:
+  case E_M2x4TFmode:
+    return true;
+  default:
+    break;
+  }
+  return false;
+}
+
 /* Implement TARGET_REGISTER_REJECT_INIT_P.  */
 
 static bool
@@ -667,6 +713,10 @@ riscv_register_reject_init_p (rtx reg)
 {
   if (TARGET_VECTOR && VECTOR_MODE_P (GET_MODE (reg)))
     return true;
+
+  if (TARGET_MATRIX && riscv_matrix_mode (GET_MODE (reg)))
+    return true;
+
   return false;
 }
 

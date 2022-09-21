@@ -622,6 +622,8 @@ public:
   poly_int (const C0 &);
   template<typename C0, typename C1>
   poly_int (const C0 &, const C1 &);
+  template<typename C0, typename C1,  typename C2>
+  poly_int (const C0 &, const C1 &, const C2 &);
 
   template<typename Ca>
   poly_int &operator = (const poly_int_pod<N, Ca> &);
@@ -681,6 +683,19 @@ poly_int<N, C>::poly_int (const C0 &c0, const C1 &c1)
   POLY_SET_COEFF (C, *this, 0, c0);
   POLY_SET_COEFF (C, *this, 1, c1);
   for (unsigned int i = 2; i < N; i++)
+    POLY_SET_COEFF (C, *this, i, wi::ints_for<C>::zero (this->coeffs[0]));
+}
+
+template<unsigned int N, typename C>
+template<typename C0, typename C1, typename C2>
+inline
+poly_int<N, C>::poly_int (const C0 &c0, const C1 &c1, const C2 &c2)
+{
+  STATIC_ASSERT (N >= 3);
+  POLY_SET_COEFF (C, *this, 0, c0);
+  POLY_SET_COEFF (C, *this, 1, c1);
+  POLY_SET_COEFF (C, *this, 2, c2);
+  for (unsigned int i = 3; i < N; i++)
     POLY_SET_COEFF (C, *this, i, wi::ints_for<C>::zero (this->coeffs[0]));
 }
 
@@ -1225,9 +1240,12 @@ template<unsigned int N, typename Ca, typename Cb>
 inline bool
 maybe_eq (const poly_int_pod<N, Ca> &a, const poly_int_pod<N, Cb> &b)
 {
-  STATIC_ASSERT (N <= 2);
+  STATIC_ASSERT (N <= 3);
   if (N == 2)
     return maybe_eq_2 (a.coeffs[0], a.coeffs[1], b.coeffs[0], b.coeffs[1]);
+  if (N == 3)
+    return maybe_eq_2 (a.coeffs[0], a.coeffs[1], b.coeffs[0], b.coeffs[1])
+      && maybe_eq_2 (a.coeffs[0], a.coeffs[2], b.coeffs[0], b.coeffs[2]);
   return a.coeffs[0] == b.coeffs[0];
 }
 
@@ -1235,9 +1253,12 @@ template<unsigned int N, typename Ca, typename Cb>
 inline typename if_nonpoly<Cb, bool>::type
 maybe_eq (const poly_int_pod<N, Ca> &a, const Cb &b)
 {
-  STATIC_ASSERT (N <= 2);
+  STATIC_ASSERT (N <= 3);
   if (N == 2)
     return maybe_eq_2 (a.coeffs[0], a.coeffs[1], b);
+  if (N == 3)
+    return maybe_eq_2 (a.coeffs[0], a.coeffs[1], b)
+      && maybe_eq_2 (a.coeffs[0], a.coeffs[2], b);
   return a.coeffs[0] == b;
 }
 
@@ -1245,9 +1266,12 @@ template<unsigned int N, typename Ca, typename Cb>
 inline typename if_nonpoly<Ca, bool>::type
 maybe_eq (const Ca &a, const poly_int_pod<N, Cb> &b)
 {
-  STATIC_ASSERT (N <= 2);
+  STATIC_ASSERT (N <= 3);
   if (N == 2)
     return maybe_eq_2 (b.coeffs[0], b.coeffs[1], a);
+  if (N == 3)
+    return maybe_eq_2 (b.coeffs[0], b.coeffs[1], a)
+      && maybe_eq_2 (b.coeffs[0], b.coeffs[2], a);
   return a == b.coeffs[0];
 }
 

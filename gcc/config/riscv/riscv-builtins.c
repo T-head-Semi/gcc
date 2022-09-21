@@ -169,6 +169,7 @@ struct riscv_builtin_description {
 
 AVAIL (hard_float, TARGET_HARD_FLOAT)
 AVAIL (vector, TARGET_VECTOR)
+AVAIL (matrix, TARGET_MATRIX)
 AVAIL (dsp, TARGET_XTHEAD_DSP)
 AVAIL (zpsfoperand, TARGET_XTHEAD_ZPSFOPERAND)
 AVAIL (dsp32, TARGET_XTHEAD_DSP && !TARGET_64BIT)
@@ -505,6 +506,21 @@ DECL_CHECKER(vector_v0p7)
 #define RISCV_ATYPE_VUI64M4X2 rvvuint64m4x2_t_node
 #define RISCV_ATYPE_VF64M4X2  rvvfloat64m4x2_t_node
 
+#define RISCV_ATYPE_MINT8  rvmint8_t_node
+#define RISCV_ATYPE_MINT16  rvmint16_t_node
+#define RISCV_ATYPE_MINT32  rvmint32_t_node
+#define RISCV_ATYPE_MINT64  rvmint64_t_node
+#define RISCV_ATYPE_MUINT8  rvmuint8_t_node
+#define RISCV_ATYPE_MUINT16  rvmuint16_t_node
+#define RISCV_ATYPE_MUINT32  rvmuint32_t_node
+#define RISCV_ATYPE_MUINT64  rvmuint64_t_node
+#define RISCV_ATYPE_MFLOAT16  rvmfloat16_t_node
+#define RISCV_ATYPE_MFLOAT32  rvmfloat32_t_node
+#define RISCV_ATYPE_MFLOAT64  rvmfloat64_t_node
+#define RISCV_ATYPE_MFLOAT16X2  rvmfloat16x2_t_node
+#define RISCV_ATYPE_MFLOAT32X2  rvmfloat32x2_t_node
+#define RISCV_ATYPE_MFLOAT64X2  rvmfloat64x2_t_node
+
 /* Helper type nodes for vector support.  */
 tree const_float_ptr_type_node;
 tree const_double_ptr_type_node;
@@ -528,6 +544,25 @@ _SCALAR_INT_ITERATOR(DECLARE_SCALAR_INT_PTR_TYPE_NODE)
   tree rvvint##SEW##m##LMUL##_t_node;	\
   tree rvvuint##SEW##m##LMUL##_t_node;
 _RVV_INT_ITERATOR(RISCV_DECL_INT_TYPES)
+
+/* Matrix type nodes. */
+tree  rvmint8_t_node;
+tree  rvmint16_t_node;
+tree  rvmint32_t_node;
+tree  rvmint64_t_node;
+
+tree  rvmuint8_t_node;
+tree  rvmuint16_t_node;
+tree  rvmuint32_t_node;
+tree  rvmuint64_t_node;
+
+tree  rvmfloat16_t_node;
+tree  rvmfloat32_t_node;
+tree  rvmfloat64_t_node;
+
+tree  rvmfloat16x2_t_node;
+tree  rvmfloat32x2_t_node;
+tree  rvmfloat64x2_t_node;
 
 #define RISCV_DECL_FLOAT_TYPES(SEW, LMUL, MLEN,	MODE, SUBMODE) \
   tree rvvfloat##SEW##m##LMUL##_t_node;
@@ -2404,6 +2439,7 @@ static const struct riscv_builtin_description riscv_builtins[] = {
   #include "config/riscv/riscv-builtins-p.def"
   #include "config/riscv/riscv-builtins-vector-v0p7.def"
   #include "config/riscv/riscv-builtins-vector-thead.def"
+  #include "config/riscv/riscv-builtins-matrix.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),
@@ -3113,6 +3149,51 @@ _RVV_SEG_NO_SEW8_ARG (RISCV_DEFINE_FSEG_TYPES, X)
 
 _RVV_SEG_ARG (RISCV_DEFINE_SEG_TYPES, X)
 
+    }
+
+  if(TARGET_MATRIX){
+
+      /* These types exist only for the ld/st intrinsics.  */
+      const_float_ptr_type_node
+	= build_pointer_type (build_type_variant (float_type_node, 1, 0));
+      const_double_ptr_type_node
+	= build_pointer_type (build_type_variant (double_type_node, 1, 0));
+      float16_ptr_type_node = build_pointer_type (fp16_type_node);
+      const_float16_type_node = build_type_variant (fp16_type_node, 1, 0);
+      const_float16_ptr_type_node
+	= build_pointer_type (const_float16_type_node);
+
+      #define DEFINE_SCALAR_PTR_TYPE_NODE(WIDTH, MODE)			\
+	int##MODE##_ptr_type_node					\
+	  = build_pointer_type (int##WIDTH##_type_node); 		\
+	unsigned_int##MODE##_ptr_type_node				\
+	  = build_pointer_type (unsigned_int##WIDTH##_type_node);	\
+	const_int##MODE##_ptr_type_node					\
+	  = build_pointer_type (					\
+	      build_type_variant (int##WIDTH##_type_node, 1, 0));	\
+	const_unsigned_int##MODE##_ptr_type_node			\
+	  = build_pointer_type (					\
+	      build_type_variant (unsigned_int##WIDTH##_type_node, 1, 0));
+
+      _SCALAR_INT_ITERATOR(DEFINE_SCALAR_PTR_TYPE_NODE);
+
+      rvmint8_t_node = riscv_vector_type ("mint8_t", intQI_type_node, M64QImode);
+      rvmint16_t_node = riscv_vector_type ("mint16_t", intHI_type_node, M32HImode);
+      rvmint32_t_node = riscv_vector_type ("mint32_t", intSI_type_node, M16SImode);
+      rvmint64_t_node = riscv_vector_type ("mint64_t", intDI_type_node, M8DImode);
+
+      rvmuint8_t_node = riscv_vector_type ("muint8_t", unsigned_intQI_type_node, M64QImode);
+      rvmuint16_t_node = riscv_vector_type ("muint16_t", unsigned_intHI_type_node, M32HImode);
+      rvmuint32_t_node = riscv_vector_type ("muint32_t", unsigned_intSI_type_node, M16SImode);
+      rvmuint64_t_node = riscv_vector_type ("muint64_t", unsigned_intDI_type_node, M8DImode);
+
+      rvmfloat16_t_node = riscv_vector_type ("mfloat16_t", fp16_type_node, M32HFmode);
+      rvmfloat32_t_node = riscv_vector_type ("mfloat32_t", float_type_node, M16SFmode);
+      rvmfloat64_t_node = riscv_vector_type ("mfloat64_t", double_type_node, M8DFmode);
+
+      rvmfloat16x2_t_node = riscv_vector_type ("mfloat16x2_t", fp16_type_node, M2x32HFmode);
+      rvmfloat32x2_t_node = riscv_vector_type ("mfloat32x2_t", float_type_node, M2x16SFmode);
+      rvmfloat64x2_t_node = riscv_vector_type ("mfloat64x2_t", double_type_node, M2x8DFmode);
     }
 
   for (size_t i = 0; i < ARRAY_SIZE (riscv_builtins); i++)

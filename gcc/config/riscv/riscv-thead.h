@@ -73,6 +73,8 @@
 #define TARGET_VECTOR_TEMP(MODE)	gen_rtx_REG (MODE, TARGET_VECTOR_TEMP_REGNUM)
 #define TARGET_VECTOR_TEMP2_REGNUM	(GP_REG_FIRST + 30)
 #define TARGET_VECTOR_TEMP2(MODE)	gen_rtx_REG (MODE, TARGET_VECTOR_TEMP2_REGNUM)
+#define TARGET_MATRIX_TEMP_REGNUM	(GP_REG_FIRST + 29)
+#define TARGET_MATRIX_TEMP(MODE)	gen_rtx_REG (MODE, TARGET_MATRIX_TEMP_REGNUM)
 
 #ifdef IN_TARGET_CODE
 extern const struct riscv_tune_param thead_c908_tune_info;
@@ -127,6 +129,12 @@ riscv_classify_address_vector (struct riscv_address_info *info, rtx x,
 /* Implement DSP extension.  */
 bool riscv_dsp_mode (machine_mode mode);
 machine_mode riscv_dsp_preferred_mode (scalar_mode mode);
+
+/* Implement Matrix extension.  */
+bool
+riscv_matrix_mode (machine_mode mode);
+bool
+riscv_matrix_x2_mode (machine_mode mode);
 
 #endif
 
@@ -301,37 +309,101 @@ machine_mode riscv_dsp_preferred_mode (scalar_mode mode);
   "%{march=rv64imav_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc:v_xthead}" \
   "%{march=rv64imav_zihintpause_zvamo_zvlsseg_xtheadc:v_xthead}" \
   "%{march=rv64imav_zvamo_zvlsseg_xtheadc:v_xthead}" \
+  "%{march=rv64imafdcpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zfh_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdcv_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdcv_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdcv_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zihintpause_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zihintpause_zfh_zba_zbb_zbc_zbs_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zihintpause_zfh_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zihintpause_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdpv_zpn_zprvsfextra_zpsfoperand_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zfh_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zihintpause_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zihintpause_zfh_zba_zbb_zbc_zbs_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zihintpause_zfh_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zihintpause_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
+  "%{march=rv64imafdv_zvamo_zvlsseg_xtheadc_xtheadmatrix:v_xthead}" \
+  "%{march=rv64imafdv_zvamo_zvlsseg_xtheadc_xtheadmatrix_xtheadvdot:v_xthead}" \
   "%{march=rv64imafdv_zvamo_zvlsseg_xtheadc_xtheadvdot:v_xthead}" \
   "%{march=rv32imafdc_zfh_xtheadc:xthead}" \
   "%{march=rv32imafd_xtheadc:xthead}" \

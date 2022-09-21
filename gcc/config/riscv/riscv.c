@@ -252,13 +252,13 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FRAME_REGS,	FRAME_REGS,	NO_REGS,	VTYPE_REGS,
+  MATRIX_MSIZE_REGS,	MATRIX_MSIZE_REGS,	MATRIX_MSIZE_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  MATRIX_REGS, MATRIX_REGS, MATRIX_REGS, MATRIX_REGS,
+  MATRIX_REGS, MATRIX_REGS, MATRIX_REGS, MATRIX_REGS,
   VECTOR_MASK_REGS,VECTOR_REGS,	VECTOR_REGS,	VECTOR_REGS,
   VECTOR_REGS,	VECTOR_REGS,	VECTOR_REGS,	VECTOR_REGS,
   VECTOR_REGS,	VECTOR_REGS,	VECTOR_REGS,	VECTOR_REGS,
@@ -310,6 +310,9 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 
 /* The number of 64-bit elements in an RVV vector.  */
 poly_uint16 riscv_rvv_chunks;
+
+/* The number of 64-bit elements in an matrix.  */
+poly_uint16 riscv_rvm_chunks;
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
@@ -793,6 +796,9 @@ riscv_valid_offset_p (rtx x, machine_mode mode)
   if (TARGET_VECTOR && VECTOR_MODE_P (mode))
     return false;
 
+  if(TARGET_MATRIX && riscv_matrix_mode (mode))
+    return false;
+
   /* We may need to split multiword moves, so make sure that every word
      is accessible.  */
   if (GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD
@@ -885,6 +891,10 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       && !riscv_classify_address_vector (info, x, mode, strict_p))
     return false;
 
+  if(TARGET_MATRIX && riscv_matrix_mode (mode)
+      && !riscv_classify_address_vector (info, x, mode, strict_p))
+    return false;
+
   switch (GET_CODE (x))
     {
     case REG:
@@ -924,6 +934,9 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       /* Vector load/store disallow LO_SUM.  */
       if (TARGET_VECTOR && VECTOR_MODE_P (mode))
 	return false;
+      if(TARGET_MATRIX && riscv_matrix_mode (mode))
+	return false;
+
       info->type = ADDRESS_LO_SUM;
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
@@ -1689,7 +1702,7 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
 
 /* TODO: */
 static rtx
-riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, poly_int64 value);
+riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, rtx tmp3, poly_int64 value);
 
 /* If (set DEST SRC) is not a valid move instruction, emit an equivalent
    sequence that is valid.  */
@@ -1699,14 +1712,15 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
   if (GET_CODE (src) == CONST_POLY_INT)
     {
-      if (satisfies_constraint_vp (src))
+      if (satisfies_constraint_vp (src) || satisfies_constraint_xp (src))
 	return false;
 
       poly_int64 value = rtx_to_poly_int64 (src);
       rtx tmp0 = gen_reg_rtx (word_mode);
       rtx tmp1 = gen_reg_rtx (word_mode);
       rtx tmp2 = gen_reg_rtx (word_mode);
-      emit_insn (riscv_gen_load_poly_int (tmp0, tmp1, tmp2, value));
+      rtx tmp3 = TARGET_MATRIX_TEMP (Pmode);
+      emit_insn (riscv_gen_load_poly_int (tmp0, tmp1, tmp2, tmp3, value));
       emit_move_insn (dest, tmp0);
       return true;
     }
@@ -2527,6 +2541,11 @@ riscv_output_move (rtx dest, rtx src)
     }
   if (dest_code == REG && GP_REG_P (REGNO (dest)) && src_code == CONST_POLY_INT)
     {
+      gcc_assert (satisfies_constraint_vp (src) || satisfies_constraint_xp (src));
+
+      if(satisfies_constraint_xp (src))
+	return "csrr\t%0,xmregsize";
+
       if (target_subset_version_p ("v", 0, 7))
 	{
 	  static char buf[128] = {0};
@@ -4238,7 +4257,7 @@ static poly_int64
 riscv_stack_align (poly_int64 value)
 {
   poly_int64 aligned_value;
-  for (unsigned i = 0; i < 2; ++i)
+  for (unsigned i = 0; i < NUM_POLY_INT_COEFFS; ++i)
     aligned_value.coeffs[i] = RISCV_STACK_ALIGN (value.coeffs[i]);
   return aligned_value;
 }
@@ -4675,38 +4694,55 @@ riscv_emit_stack_tie (void)
 }
 
 static rtx
-riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, poly_int64 value)
+riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, rtx tmp3, poly_int64 value)
 {
   gcc_assert (!value.is_constant ());
-  rtx insn;
+  rtx insn = NULL_RTX;
 
-  HOST_WIDE_INT scalar_offset = 0;
+  HOST_WIDE_INT scalar_offset = value.coeffs[0];
+  HOST_WIDE_INT vector_offset = value.coeffs[1];
+  HOST_WIDE_INT matrix_offset = value.coeffs[2];
 
-  if (value.coeffs[0] != value.coeffs[1])
-    scalar_offset = value.coeffs[0] - value.coeffs[1];
+  if (matrix_offset != 0)
+    {
+      scalar_offset -= matrix_offset;
 
-  if (scalar_offset)
-    value -= scalar_offset;
+      HOST_WIDE_INT mregsize_mul_int = matrix_offset / UNITS_PER_M_REG.coeffs[2];
 
-  gcc_assert (multiple_p (value, UNITS_PER_V_REG));
-  poly_int64 vlenb_mul = exact_div (value, UNITS_PER_V_REG);
-  emit_insn (gen_read_vlenb (tmp1));
+      emit_insn (gen_read_mregsize (tmp3));
+      emit_move_insn (tmp2, gen_int_mode (mregsize_mul_int, Pmode));
 
-  gcc_assert (vlenb_mul.is_constant ());
+      if (vector_offset == 0)
+	insn = TARGET_64BIT ? gen_muldi3 (target, tmp3, tmp2) : gen_mulsi3 (target, tmp3, tmp2);
+      else
+	insn = TARGET_64BIT ? gen_muldi3 (tmp3, tmp3, tmp2) : gen_mulsi3 (tmp3, tmp3, tmp2);
+    }
 
-  HOST_WIDE_INT vlenb_mul_int = vlenb_mul.to_constant();
+  if (vector_offset != 0)
+    {
+      scalar_offset -= vector_offset;
 
-  emit_move_insn (tmp2,
-		  gen_int_mode (vlenb_mul_int, Pmode));
+      if (insn)
+	emit_insn (insn);
 
-  if (TARGET_64BIT)
-    insn = gen_muldi3 (target, tmp1, tmp2);
-  else
-    insn = gen_mulsi3 (target, tmp1, tmp2);
+      HOST_WIDE_INT vlenb_mul_int = vector_offset / UNITS_PER_V_REG.coeffs[1];
+
+      emit_insn (gen_read_vlenb (tmp1));
+      emit_move_insn (tmp2, gen_int_mode (vlenb_mul_int, Pmode));
+
+      insn = TARGET_64BIT ? gen_muldi3 (target, tmp1, tmp2) : gen_mulsi3 (target, tmp1, tmp2);
+
+      if (matrix_offset != 0)
+	{
+	  emit_insn (insn);
+	  insn = gen_add3_insn (target, target, tmp3);
+	}
+    }
 
   if (scalar_offset)
     {
-      emit_insn (insn);
+      if (insn)
+	emit_insn (insn);
 
       if (SMALL_OPERAND (scalar_offset))
 	return gen_add3_insn (target, target, GEN_INT (scalar_offset));
@@ -4725,9 +4761,10 @@ riscv_adjust_frame (rtx target, poly_int64 offset)
 {
   rtx temp_reg1 = RISCV_PROLOGUE_TEMP (Pmode);
   rtx temp_reg2 = RISCV_PROLOGUE_TEMP2 (Pmode);
+  rtx temp_reg3 = TARGET_MATRIX_TEMP (Pmode);
   rtx insn, dwarf, adjust_frame_rtx;
 
-  emit_insn (riscv_gen_load_poly_int (temp_reg1, temp_reg1, temp_reg2, offset));
+  emit_insn (riscv_gen_load_poly_int (temp_reg1, temp_reg1, temp_reg2, temp_reg3, offset));
 
   insn = gen_add3_insn (target,
 			target,
@@ -4823,11 +4860,11 @@ riscv_expand_prologue (void)
   /* Allocate the rest of the frame.  */
   if (known_gt (size, 0))
     {
-      /* Two step adjustment, first for vector values.  */
+      /* Two step adjustment, first for vector and matrix values.  */
       if (!size.is_constant ())
 	{
 	  poly_int64 adj_offset = size;
-	  adj_offset.coeffs[0] = size.coeffs[1];
+	  adj_offset.coeffs[0] = size.coeffs[1] + size.coeffs[2];
 	  riscv_adjust_frame (stack_pointer_rtx, -adj_offset);
 	  size -= adj_offset;
 	}
@@ -4938,7 +4975,8 @@ riscv_expand_epilogue (int style)
 	{
 	  rtx tmp1 = RISCV_PROLOGUE_TEMP (Pmode);
 	  rtx tmp2 = RISCV_PROLOGUE_TEMP2 (Pmode);
-	  emit_insn (riscv_gen_load_poly_int (tmp1, tmp1, tmp2, adjust));
+	  rtx tmp3 = TARGET_MATRIX_TEMP (Pmode);
+	  emit_insn (riscv_gen_load_poly_int (tmp1, tmp1, tmp2, tmp3, adjust));
 	  adjust_rtx = tmp1;
 	}
       else
@@ -4986,7 +5024,7 @@ riscv_expand_epilogue (int style)
       if (!step1.is_constant ())
 	{
 	  poly_int64 adj_offset = step1;
-	  adj_offset.coeffs[0] = step1.coeffs[1];
+	  adj_offset.coeffs[0] = step1.coeffs[1] + step1.coeffs[2];
 	  riscv_adjust_frame (stack_pointer_rtx, adj_offset);
 	  step1 -= adj_offset;
 	}
@@ -5294,6 +5332,17 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
       else
 	return 1;
     }
+  else if (MATRIX_SIZE_REG_P (regno))
+    {
+	return 1;
+    }
+  else if (MATRIX_REG_P (regno))
+    {
+      if (riscv_matrix_x2_mode (mode))
+	return 2;
+      else
+	return 1;
+    }
 
   /* All other registers are word-sized.  */
   return CEIL (lowest_size, UNITS_PER_WORD);
@@ -5385,6 +5434,20 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (nregs != 1)
 	return false;
     }
+  else if (MATRIX_SIZE_REG_P (regno))
+    {
+      if (!(GET_MODE_CLASS (mode) == MODE_INT))
+	return false;
+    }
+  else if (MATRIX_REG_P (regno))
+    {
+      if (!riscv_matrix_mode (mode))
+	return false;
+
+      if (riscv_matrix_x2_mode (mode) && ((regno & 1) !=0)){
+	return false;
+      }
+    }
   else
     return false;
 
@@ -5423,6 +5486,9 @@ riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)
 
   if (reg_class_subset_p (rclass, VECTOR_REGS))
     return riscv_hard_regno_nregs (VECT_REG_FIRST, mode);
+
+  if (reg_class_subset_p (rclass, MATRIX_REGS))
+    return riscv_hard_regno_nregs (MATRIX_REG_FIRST, mode);
 
   return 0;
 }
@@ -5667,9 +5733,11 @@ riscv_option_override (void)
 #endif
 
   if (riscv_rvv_vector_bits == RVV_SCALABLE)
-    riscv_rvv_chunks = poly_uint16 (2, 2);
+    riscv_rvv_chunks = poly_uint16 (2, 2, 0);
   else
     riscv_rvv_chunks = (int) riscv_rvv_vector_bits / 64;
+
+  riscv_rvm_chunks = poly_uint16 (2, 0, 2);
 
   if (TARGET_XTHEAD)
     riscv_xthead_option_override (tune_param, &global_options, &global_options_set);
@@ -5713,6 +5781,14 @@ riscv_conditional_register_usage (void)
 	fixed_regs[regno] = call_used_regs[regno] = 1;
       fixed_regs[VTYPE_REGNUM] = call_used_regs[VTYPE_REGNUM] = 1;
     }
+
+  if (!TARGET_MATRIX){
+      for (int regno = MATRIX_REG_FIRST; regno <= MATRIX_REG_LAST; regno++)
+	fixed_regs[regno] = call_used_regs[regno] = 1;
+      fixed_regs[MATRIX_SIZE_M_REGNUM] = call_used_regs[MATRIX_SIZE_M_REGNUM] = 1;
+      fixed_regs[MATRIX_SIZE_N_REGNUM] = call_used_regs[MATRIX_SIZE_N_REGNUM] = 1;
+      fixed_regs[MATRIX_SIZE_K_REGNUM] = call_used_regs[MATRIX_SIZE_K_REGNUM] = 1;
+  }
 
   if (target_subset_version_p ("v", 0, 7)
       && cfun && cfun->machine->has_vector_ops_p)
@@ -6196,6 +6272,9 @@ riscv_mangle_type (const_tree type)
   if (TARGET_VECTOR && VECTOR_MODE_P (TYPE_MODE (type)))
     return riscv_mangle_builtin_type(type);
 
+  if (TARGET_MATRIX && riscv_matrix_mode (TYPE_MODE (type)))
+    return riscv_mangle_builtin_type (type);
+
   /* Use the default mangling.  */
   return NULL;
 }
@@ -6277,6 +6356,9 @@ riscv_vector_mode_supported_p (machine_mode mode)
       || riscv_dsp_mode (mode))
     return true;
 
+  if (TARGET_MATRIX && riscv_matrix_mode (mode))
+    return true;
+
   return false;
 }
 
@@ -6344,12 +6426,40 @@ static unsigned int
 riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 				      int *offset)
 {
-  /* Polynomial invariant 1 == (VLENB / 16) - 1.  */
-  /* XXX: It's might not correct for ELEN=32 system.  */
-  gcc_assert (i == 1);
-  *factor = 16;
-  *offset = 1;
-  return RISCV_DWARF_VLEN;
+  switch (i)
+  {
+    case 1:
+      /* Polynomial invariant 1 == (VLENB / 16) - 1.  */
+      /* XXX: It's might not correct for ELEN=32 system.  */
+      *factor = 16;
+      *offset = 1;
+      return RISCV_DWARF_VLEN;
+    case 2:
+      /* TODO: It's might not correct for matrix. */
+      *factor = 16;
+      *offset = 1;
+      return RISCV_DWARF_XMREGSIZE;
+     default:
+       gcc_unreachable ();
+  }
+
+  gcc_unreachable ();
+  return 0;
+}
+
+/* Provide a mapping from gcc register numbers to dwarf register numbers.  */
+unsigned
+riscv_dbx_register_number (unsigned regno)
+{
+  if (GP_REG_P (regno) || FP_REG_P (regno) || VECT_REG_P (regno))
+    return regno;
+
+  if (MATRIX_REG_P (regno))
+    /* The matrix register numbers(88 - 96) is mapped to DWARF2 register
+       numbers(3072 - 3079). */
+    return (regno + 0xBA8);
+
+  return INVALID_REGNUM;
 }
 
 /* Implement REGMODE_NATURAL_SIZE.  */
@@ -6357,6 +6467,10 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 poly_uint64
 riscv_regmode_natural_size (machine_mode mode)
 {
+  if(TARGET_MATRIX && riscv_matrix_mode (mode)
+      && !GET_MODE_SIZE (mode).is_constant ())
+    return BYTES_PER_RVM_MATRIX;
+
   if (TARGET_VECTOR && VECTOR_MODE_P (mode)
       && !GET_MODE_SIZE (mode).is_constant ())
     return BYTES_PER_RVV_VECTOR;
@@ -6465,17 +6579,19 @@ riscv_verify_type_context (location_t loc, type_context_kind context,
   if (GET_MODE_SIZE (TYPE_MODE (type)).is_constant ())
     return true;
 
+  const char *base = riscv_matrix_mode (DECL_MODE (type)) ? "RVM" : "RVV";
+
   switch (context)
     {
     case TCTX_SIZEOF:
     case TCTX_STATIC_STORAGE:
       if (!silent_p)
-	error_at (loc, "RVV type %qT does not have a fixed size", type);
+	error_at (loc, "%s type %qT does not have a fixed size", base, type);
       return false;
 
     case TCTX_ALIGNOF:
       if (!silent_p)
-	error_at (loc, "RVV type %qT does not have a defined alignment", type);
+	error_at (loc, "%s type %qT does not have a defined alignment", base, type);
       return false;
 
     case TCTX_THREAD_STORAGE:
@@ -6486,41 +6602,41 @@ riscv_verify_type_context (location_t loc, type_context_kind context,
 
     case TCTX_POINTER_ARITH:
       if (!silent_p)
-	error_at (loc, "arithmetic on pointer to RVV type %qT", type);
+	error_at (loc, "arithmetic on pointer to %s type %qT", base, type);
       return false;
 
     case TCTX_FIELD:
       if (silent_p)
 	;
       else if (lang_GNU_CXX ())
-	error_at (loc, "member variables cannot have RVV type %qT", type);
+	error_at (loc, "member variables cannot have %s type %qT", base, type);
       else
-	error_at (loc, "fields cannot have RVV type %qT", type);
+	error_at (loc, "fields cannot have %s type %qT", base, type);
       return false;
 
     case TCTX_ARRAY_ELEMENT:
       if (!silent_p)
-	error_at (loc, "array elements cannot have RVV type %qT", type);
+	error_at (loc, "array elements cannot have %s type %qT", base, type);
       return false;
 
     case TCTX_ALLOCATION:
       if (!silent_p)
-	error_at (loc, "cannot allocate objects with RVV type %qT", type);
+	error_at (loc, "cannot allocate objects with %s type %qT", base, type);
       return false;
 
     case TCTX_DEALLOCATION:
       if (!silent_p)
-	error_at (loc, "cannot delete objects with RVV type %qT", type);
+	error_at (loc, "cannot delete objects with %s type %qT", base, type);
       return false;
 
     case TCTX_EXCEPTIONS:
       if (!silent_p)
-	error_at (loc, "cannot throw or catch RVV type %qT", type);
+	error_at (loc, "cannot throw or catch %s type %qT", base, type);
       return false;
 
     case TCTX_CAPTURE_BY_COPY:
       if (!silent_p)
-	error_at (loc, "capture by copy of RVV type %qT", type);
+	error_at (loc, "capture by copy of %s type %qT", base, type);
       return false;
     }
   gcc_unreachable ();

@@ -3848,7 +3848,7 @@ id_equal (const char *str, const_tree id)
 inline poly_uint64
 TYPE_VECTOR_SUBPARTS (const_tree node)
 {
-  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 3);
   unsigned int precision = VECTOR_TYPE_CHECK (node)->type_common.precision;
   if (NUM_POLY_INT_COEFFS == 2)
     {
@@ -3858,6 +3858,16 @@ TYPE_VECTOR_SUBPARTS (const_tree node)
       res.coeffs[0] = HOST_WIDE_INT_1U << (precision & 0xff);
       if (precision & 0x100)
 	res.coeffs[1] = HOST_WIDE_INT_1U << (precision & 0xff);
+      return res;
+    }
+  else if (NUM_POLY_INT_COEFFS == 3)
+    {
+      poly_uint64 res = 0;
+      res.coeffs[0] = HOST_WIDE_INT_1U << (precision & 0xff);
+      if (precision & 0xff00)
+	res.coeffs[1]= HOST_WIDE_INT_1U << (precision & 0xff);
+      if (precision & 0x10000)
+	res.coeffs[2]= HOST_WIDE_INT_1U << (precision & 0xff);
       return res;
     }
   else
@@ -3870,7 +3880,7 @@ TYPE_VECTOR_SUBPARTS (const_tree node)
 inline void
 SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
 {
-  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 3);
   unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
   int index = exact_log2 (coeff0);
   gcc_assert (index >= 0);
@@ -3896,6 +3906,17 @@ SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
       VECTOR_TYPE_CHECK (node)->type_common.precision
 	= index + (coeff1 != 0 ? 0x100 : 0);
     }
+  else if (NUM_POLY_INT_COEFFS == 3)
+    {
+      unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
+      gcc_assert (coeff1 == 0 || coeff1 == coeff0);
+
+      unsigned HOST_WIDE_INT coeff2 = subparts.coeffs[2];
+      gcc_assert (coeff2 == 0 || coeff2 == coeff0);
+
+      VECTOR_TYPE_CHECK (node)->type_common.precision
+	= index + (coeff1 != 0 ? 0x100 : 0) + (coeff2 != 0 ? 0x10000 : 0);
+    }
   else
     VECTOR_TYPE_CHECK (node)->type_common.precision = index;
 }
@@ -3909,7 +3930,7 @@ valid_vector_subparts_p (poly_uint64 subparts)
   unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
   if (!pow2p_hwi (coeff0))
     return false;
-  if (NUM_POLY_INT_COEFFS == 2)
+  if (NUM_POLY_INT_COEFFS == 2 || NUM_POLY_INT_COEFFS == 3)
     {
       unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
       if (coeff1 != 0 && coeff1 != coeff0)

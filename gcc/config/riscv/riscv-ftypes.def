@@ -74,3 +74,4 @@ _RVV_MASK_ITERATOR(DEF_MASKED_UNARY_VECTOR_MASKING_FTYPE)
 _RVV_MASK_ITERATOR(DEF_MASKED_BINARY_VECTOR_MASKING_FTYPE)
 
 #include "riscv-vector-ftypes.def"
+#include "riscv-matrix-ftypes.def"
