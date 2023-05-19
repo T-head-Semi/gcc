@@ -252,7 +252,7 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FRAME_REGS,	FRAME_REGS,	NO_REGS,	VTYPE_REGS,
-  MATRIX_MSIZE_REGS,	MATRIX_MSIZE_REGS,	MATRIX_MSIZE_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
@@ -2544,7 +2544,7 @@ riscv_output_move (rtx dest, rtx src)
       gcc_assert (satisfies_constraint_vp (src) || satisfies_constraint_xp (src));
 
       if(satisfies_constraint_xp (src))
-	return "csrr\t%0,xmregsize";
+	return "csrr\t%0,xmlenb";
 
       if (target_subset_version_p ("v", 0, 7))
 	{
@@ -4707,10 +4707,10 @@ riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, rtx tmp3, poly_int64 va
     {
       scalar_offset -= matrix_offset;
 
-      HOST_WIDE_INT mregsize_mul_int = matrix_offset / UNITS_PER_M_REG.coeffs[2];
+      HOST_WIDE_INT mlenb_mul_int = matrix_offset / UNITS_PER_M_REG.coeffs[2];
 
-      emit_insn (gen_read_mregsize (tmp3));
-      emit_move_insn (tmp2, gen_int_mode (mregsize_mul_int, Pmode));
+      emit_insn (gen_read_mlenb (tmp3));
+      emit_move_insn (tmp2, gen_int_mode (mlenb_mul_int, Pmode));
 
       if (vector_offset == 0)
 	insn = TARGET_64BIT ? gen_muldi3 (target, tmp3, tmp2) : gen_mulsi3 (target, tmp3, tmp2);
@@ -6438,7 +6438,7 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
       /* TODO: It's might not correct for matrix. */
       *factor = 16;
       *offset = 1;
-      return RISCV_DWARF_XMREGSIZE;
+      return RISCV_DWARF_MLENB;
      default:
        gcc_unreachable ();
   }
@@ -6449,7 +6449,7 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 
 /* Provide a mapping from gcc register numbers to dwarf register numbers.  */
 unsigned
-riscv_dbx_register_number (unsigned regno)
+riscv_frame_register_number (unsigned regno)
 {
   if (GP_REG_P (regno) || FP_REG_P (regno) || VECT_REG_P (regno))
     return regno;

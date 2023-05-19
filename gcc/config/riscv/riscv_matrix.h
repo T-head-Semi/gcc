@@ -34,7 +34,6 @@
 #error "Matrix intrinsics require the matrix extension."
 #else
 
-typedef unsigned int word_type __attribute__ ((mode (__word__)));
 typedef __fp16 float16_t;
 typedef float float32_t;
 typedef double float64_t;
@@ -45,14 +44,13 @@ typedef double __float64_t;
 
 enum RVM_CSR
 {
-  RVM_MRSTART = 0,
-  RVM_MCSR,
-  RVM_MXRM,
-  RVM_MXSAT,
-  RVM_MSIZE,
-  RVM_MREGSIZE,
-  RVM_MLENB,
-  RVM_MISA,
+  RVM_XMRSTART = 0,
+  RVM_XMCSR,
+  RVM_XMSIZE,
+  RVM_XMLENB,
+  RVM_XRLENB,
+  RVM_XMISA,
+  RVM_NULL
 };
 
 __extension__ extern __inline
@@ -62,28 +60,22 @@ unsigned long mread_csr(enum RVM_CSR csr)
   unsigned long rm = 0;
   switch (csr)
     {
-    case RVM_MRSTART:
+    case RVM_XMRSTART:
       __asm__ __volatile__ ("csrr\t%0,xmrstart" : "=r"(rm) : : "memory");
       break;
-    case RVM_MCSR:
+    case RVM_XMCSR:
       __asm__ __volatile__ ("csrr\t%0,xmcsr" : "=r"(rm) : : "memory");
       break;
-    case RVM_MXRM:
-      __asm__ __volatile__ ("csrr\t%0,xmxrm" : "=r"(rm) : : "memory");
-      break;
-    case RVM_MXSAT:
-      __asm__ __volatile__ ("csrr\t%0,xmxsat" : "=r"(rm) : : "memory");
-      break;
-    case RVM_MSIZE:
+    case RVM_XMSIZE:
       __asm__ __volatile__ ("csrr\t%0,xmsize" : "=r"(rm) : : "memory");
       break;
-    case RVM_MREGSIZE:
-      __asm__ __volatile__ ("csrr\t%0,xmregsize" : "=r"(rm) : : "memory");
-      break;
-    case RVM_MLENB:
+    case RVM_XMLENB:
       __asm__ __volatile__ ("csrr\t%0,xmlenb" : "=r"(rm) : : "memory");
       break;
-    case RVM_MISA:
+    case RVM_XRLENB:
+      __asm__ __volatile__ ("csrr\t%0,xrlenb" : "=r"(rm) : : "memory");
+      break;
+    case RVM_XMISA:
       __asm__ __volatile__ ("csrr\t%0,xmisa" : "=r"(rm) : : "memory");
       break;
     }
@@ -96,29 +88,14 @@ void mwrite_csr(enum RVM_CSR csr, unsigned long value)
 {
   switch (csr)
     {
-    case RVM_MRSTART:
+    case RVM_XMRSTART:
       __asm__ __volatile__ ("csrw\txmrstart,%z0" : : "rJ"(value) : "memory");
       break;
-    case RVM_MCSR:
+    case RVM_XMCSR:
       __asm__ __volatile__ ("csrw\txmcsr,%z0" : : "rJ"(value) : "memory");
       break;
-    case RVM_MXRM:
-      __asm__ __volatile__ ("csrw\txmxrm,%z0" : : "rJ"(value) : "memory");
-      break;
-    case RVM_MXSAT:
-      __asm__ __volatile__ ("csrw\txmxsat,%z0" : : "rJ"(value) : "memory");
-      break;
-    case RVM_MSIZE:
+    case RVM_XMSIZE:
       __asm__ __volatile__ ("csrw\txmsize,%z0" : : "rJ"(value) : "memory");
-      break;
-    case RVM_MREGSIZE:
-      __asm__ __volatile__ ("csrw\txmregsize,%z0" : : "rJ"(value) : "memory");
-      break;
-    case RVM_MLENB:
-      __asm__ __volatile__ ("csrw\txmlenb,%z0" : : "rJ"(value) : "memory");
-      break;
-    case RVM_MISA:
-      __asm__ __volatile__ ("csrw\txmisa,%z0" : : "rJ"(value) : "memory");
       break;
     }
 }
@@ -153,7 +130,7 @@ mcfgk(uint16_t k)
 
 __extension__ extern __inline void
 __attribute__((__always_inline__, __gnu_inline__, __artificial__))
-mrelease()
+mrelease(void)
 {
   __builtin_riscv_matrix_mrelease();
 }
@@ -198,13 +175,13 @@ mrelease()
 #define __MATRIX_UNDEFINED_ZERO(TYPE_T, STYPE, TYPE)   \
 __extension__ extern __inline m##TYPE_T  \
 __attribute__((__always_inline__, __gnu_inline__, __artificial__))  \
-mundefined_m##STYPE() \
+mundefined_m##STYPE(void) \
 { \
   return __builtin_riscv_matrix_mundefined_m##STYPE(); \
 } \
 __extension__ extern __inline m##TYPE_T  \
 __attribute__((__always_inline__, __gnu_inline__, __artificial__))  \
-mzero_m##STYPE() \
+mzero_m##STYPE(void) \
 { \
   return __builtin_riscv_matrix_mzero_m##STYPE(); \
 }
@@ -252,7 +229,26 @@ msst_##STYPE##_m##STYPE(TYPE_T *a, long b, m##TYPE_T c)            \
   else                                                                 \
     __builtin_riscv_matrix_msst_di_##TYPE(c, a, b);                    \
 }                                                                      \
-								\
+  \
+__extension__ extern __inline m##TYPE_T                                \
+__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
+mld1m_##STYPE(TYPE_T *a)                                     \
+{                                                                      \
+  if (__riscv_xlen == 32)                                              \
+    return __builtin_riscv_matrix_mld1m_si_##TYPE(a);                 \
+  else                                                                 \
+    return __builtin_riscv_matrix_mld1m_di_##TYPE(a);                 \
+}                                                                      \
+  \
+__extension__ extern __inline void                                     \
+__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
+mst1m_##STYPE##_m##STYPE(TYPE_T *a, m##TYPE_T b)             \
+{                                                                      \
+  if (__riscv_xlen == 32)                                              \
+    __builtin_riscv_matrix_mst1m_si_##TYPE(b, a);                     \
+  else                                                                 \
+    __builtin_riscv_matrix_mst1m_di_##TYPE(b, a);                     \
+} \
 __extension__ extern __inline m##TYPE_T                                \
 __attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
 mmov_m##STYPE(m##TYPE_T a)                                         \
@@ -264,31 +260,6 @@ __attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
 mmov_m##STYPE##v(m##TYPE_T a, uint8_t b)                           \
 {                                                                      \
   return __builtin_riscv_matrix_mmov_mv_##TYPE(a, b);                  \
-}                                                                      \
-__extension__ extern __inline m##TYPE_T                                \
-__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
-mmov_##STYPE(TYPE_T a)                                             \
-{                                                                      \
-  return __builtin_riscv_matrix_mmov_mx_##TYPE(a);                     \
-} \
-  \
-__extension__ extern __inline m##TYPE_T                                \
-__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
-mld1m_##STYPE(TYPE_T *a)                                     \
-{                                                                      \
-  if (__riscv_xlen == 32)                                              \
-    return __builtin_riscv_matrix_mld1m_si_##TYPE(a);                 \
-  else                                                                 \
-    return __builtin_riscv_matrix_mld1m_di_##TYPE(a);                 \
-}                                                                      \
-__extension__ extern __inline void                                     \
-__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
-mst1m_##STYPE##_m##STYPE(TYPE_T *a, m##TYPE_T b)             \
-{                                                                      \
-  if (__riscv_xlen == 32)                                              \
-    __builtin_riscv_matrix_mst1m_si_##TYPE(b, a);                     \
-  else                                                                 \
-    __builtin_riscv_matrix_mst1m_di_##TYPE(b, a);                     \
 }
 
 #define __MATRIX_FLOAT_X2(TYPE_T, STYPE, TYPE)                                                                   \
@@ -486,9 +457,30 @@ mn4clipu_mu##STYPE##_u##STYPE(mu##TYPE_T a, u##TYPE_T b)                 \
   return __builtin_riscv_matrix_mn4clipu_mx_##TYPE(a, b);                    \
 }
 
+#define __MATRIX_MOV(TYPE_T, STYPE, TYPE)                                    \
+__extension__ extern __inline m##TYPE_T                                \
+__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
+mmov_mx_##STYPE(m##TYPE_T a, TYPE_T b, uint8_t c)                                             \
+{                                                                      \
+  return __builtin_riscv_matrix_mmov_mx_##TYPE(a, b, c);                     \
+} \
+__extension__ extern __inline TYPE_T                                \
+__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
+mmov_xm_##STYPE(m##TYPE_T a, uint8_t b)                                             \
+{                                                                      \
+  return __builtin_riscv_matrix_mmov_xm_##TYPE(a, b);                     \
+} \
+__extension__ extern __inline m##TYPE_T                                \
+__attribute__((__always_inline__, __gnu_inline__, __artificial__)) \
+mdup_##STYPE(TYPE_T a)                                             \
+{                                                                      \
+  return __builtin_riscv_matrix_mdup_mx_##TYPE(a);                     \
+}
+
 _RVM_ALL_TYPE_ITERATOR(__MATRIX_LOAD_STORE)
 _RVM_INT_TYPE_ITERATOR(__MATRIX_ALU)
 _RVM_INT_SD_TYPE_ITERATOR(__MATRIX_SHIFT)
+_RVM_INT_TYPE_ITERATOR(__MATRIX_MOV)
 
 __extension__ extern __inline mfloat16_t __attribute__((__always_inline__, __gnu_inline__, __artificial__))
 fmmacc_mf16x2_mf16(mfloat16_t a, mfloat16x2_t b, mfloat16_t c)

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "*" } { "-march=rv*xtheadmatrix*" } } */
-/* { dg-options "-O2" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-march=rv64*" } } */
+/* { dg-options "-march=rv64gc_xtheadmatrix -mabi=lp64d -O2" } */
 
 #include <riscv_matrix.h>
 #include <stddef.h>

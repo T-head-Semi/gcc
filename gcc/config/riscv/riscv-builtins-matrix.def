@@ -65,21 +65,15 @@ _M_WHOLE_2M_LOAD_STORE_BUILTINS(m2x32hf, float16, MFLOAT16X2, C_HF_PTR)
 #define _MINT_MOV_BUILTINS(mode, type, RETURN, ARGS, instr)			\
   DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN, matrix), \
   DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_UQI, matrix), \
-  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_## type, RISCV_M## RETURN ##_FTYPE_## ARGS, matrix), \
+  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_## ARGS ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mmov_xm_## mode ## _ ## type, matrix_mmov_xm_## type, RISCV_## ARGS ##_FTYPE_M## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mdup_mx_## mode ## _ ## type, matrix_mdup_mx_## type, RISCV_M## RETURN ##_FTYPE_## ARGS, matrix), \
   \
   DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN, matrix), \
   DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_UQI, matrix), \
-  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_u## type, RISCV_MU## RETURN ##_FTYPE_U## ARGS, matrix),
-
-#define _MFLOAT_MOV_BUILTINS(mode, type, RETURN, ARGS)			\
-  DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_## type, RISCV_## RETURN ##_FTYPE_## RETURN, matrix), \
-  DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_## type, RISCV_## RETURN ##_FTYPE_## RETURN ##_UQI, matrix), \
-  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix),
-
-_MFLOAT_MOV_BUILTINS(m8df, float64, MFLOAT64, DF)
-_MFLOAT_MOV_BUILTINS(m16sf, float32, MFLOAT32, SF)
-_MFLOAT_MOV_BUILTINS(m32hf, float16, MFLOAT16, HF)
-
+  DIRECT_NAMED (matrix_mmov_mx_## mode ## _ ## type, matrix_mmov_mx_u## type, RISCV_MU## RETURN ##_FTYPE_MU## RETURN ##_U## ARGS##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mmov_xm_## mode ## _ ## type, matrix_mmov_xm_u## type, RISCV_U## ARGS##_FTYPE_MU## RETURN ##_UQI, matrix), \
+  DIRECT_NAMED (matrix_mdup_mx_## mode ## _ ## type, matrix_mdup_mx_u## type, RISCV_MU## RETURN ##_FTYPE_U## ARGS, matrix),
 
 #define _MFLOAT_MOV_X2_BUILTINS(mode, type, RETURN, ARGS)			\
   DIRECT_NAMED (matrix_mmov_mm_x2_## mode, matrix_mmov_mm_x2_## type, RISCV_## RETURN ##_FTYPE_## ARGS, matrix),
@@ -87,6 +81,14 @@ _MFLOAT_MOV_BUILTINS(m32hf, float16, MFLOAT16, HF)
 _MFLOAT_MOV_X2_BUILTINS(m2x8df_m8df, float64, MFLOAT64X2, MFLOAT64_MFLOAT64)
 _MFLOAT_MOV_X2_BUILTINS(m2x16sf_m16sf, float32, MFLOAT32X2, MFLOAT32_MFLOAT32)
 _MFLOAT_MOV_X2_BUILTINS(m2x32hf_m32hf, float16, MFLOAT16X2, MFLOAT16_MFLOAT16)
+
+#define _MFLOAT_MOV_BUILTINS(mode, type, RETURN, ARGS)			\
+  DIRECT_NAMED (matrix_mmov_mm_## mode, matrix_mmov_mm_## type, RISCV_## RETURN ##_FTYPE_## RETURN, matrix), \
+  DIRECT_NAMED (matrix_mmov_mv_## mode, matrix_mmov_mv_## type, RISCV_## RETURN ##_FTYPE_## RETURN ##_UQI, matrix), \
+
+_MFLOAT_MOV_BUILTINS(m8df, float64, MFLOAT64, DF)
+_MFLOAT_MOV_BUILTINS(m16sf, float32, MFLOAT32, SF)
+_MFLOAT_MOV_BUILTINS(m32hf, float16, MFLOAT16, HF)
 
 #define _MINT_AUL_BUILTINS(mode, type, RETURN, ARGS, instr)			\
   DIRECT_NAMED (matrix_## instr ##_mm_## mode, matrix_## instr ##_mm_## type, RISCV_M## RETURN ##_FTYPE_M## RETURN ##_M##  RETURN, matrix), \

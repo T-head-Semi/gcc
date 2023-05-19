@@ -393,9 +393,9 @@
   })
 
 
-;; Matrix read mregsize
+;; Matrix read mlenb
 
-(define_expand "read_mregsize"
+(define_expand "read_mlenb"
   [(match_operand 0 "register_operand")]
   "TARGET_MATRIX"
 {
@@ -513,25 +513,58 @@
     return "mmov.mv.x\t%0,%1[%2]";
   })
 
-(define_expand "matrix_mmov_mx_<MMODES:mode>_<MMODES:mtype>"
-  [(set (match_operand:MMODES 0 "register_operand")
-    (unspec:MMODES
-      [(match_operand:<MSUBMODE> 1 "reg_or_imm_operand")]
+(define_expand "matrix_mmov_mx_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:MIMODES 0 "register_operand")
+    (unspec:MIMODES
+      [(match_operand:<MSUBMODE> 2 "reg_or_imm_operand")
+      (match_operand:QI 3 "reg_or_imm_operand")
+      (match_operand:MIMODES 1 "register_operand")]
+    UNSPEC_MMOVE))]
+  "TARGET_MATRIX"
+ {
+    if (!REG_P (operands[2]))
+      operands[2] = force_reg (<MSUBMODE>mode, operands[2]);
+
+    if (!REG_P (operands[3]))
+      operands[3] = force_reg (QImode, operands[3]);
+ })
+
+(define_insn "*matrix_mmov_mx_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:MIMODES 0 "register_operand" "=xr")
+    (unspec:MIMODES
+      [(match_operand:<MSUBMODE> 2 "register_operand")
+      (match_operand:QI 3 "register_operand")
+      (match_operand:MIMODES 1 "register_operand")]
+    UNSPEC_MMOVE))]
+  "TARGET_MATRIX"
+ {
+    return "mmov<MIMODES:lsfmt>.m.x\t%0,%2,%3";
+ })
+
+(define_expand "matrix_mmov_xm_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:<MSUBMODE> 0 "register_operand")
+    (unspec:<MSUBMODE>
+      [(match_operand:MIMODES 1 "register_operand")
+      (match_operand:QI 2 "reg_or_imm_operand")]
     UNSPEC_MMOVE))]
   "TARGET_MATRIX"
  {
     if (!REG_P (operands[1]))
       operands[1] = force_reg (<MSUBMODE>mode, operands[1]);
+
+    if (!REG_P (operands[2]))
+      operands[2] = force_reg (QImode, operands[2]);
  })
 
-(define_insn "*matrix_mmov_mx_<MMODES:mode>_<MMODES:mtype>"
-  [(set (match_operand:MMODES 0 "register_operand" "=xr")
-    (unspec:MMODES
-      [(match_operand:<MSUBMODE> 1 "register_operand" "xi")]
+(define_insn "*matrix_mmov_xm_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:<MSUBMODE> 0 "register_operand" "=r")
+    (unspec:<MSUBMODE>
+      [(match_operand:MIMODES 1 "register_operand" "xr")
+      (match_operand:QI 2 "register_operand" "r")]
     UNSPEC_MMOVE))]
   "TARGET_MATRIX"
  {
-    return "mmov.mx\t%0,%1";
+    return "mmov<MIMODES:lsfmt>.x.m\t%0,%1,%2";
  })
 
 
@@ -558,6 +591,29 @@
     return "mmov.mm\t%0,%1\n\tmmov.mm\t%N0,%2";
  })
 
+
+;; Matrix mdup
+
+(define_expand "matrix_mdup_mx_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:MIMODES 0 "register_operand")
+    (unspec:MIMODES
+      [(match_operand:<MSUBMODE> 1 "reg_or_imm_operand")]
+    UNSPEC_MDUP))]
+  "TARGET_MATRIX"
+ {
+    if (!REG_P (operands[1]))
+      operands[1] = force_reg (<MSUBMODE>mode, operands[1]);
+ })
+
+(define_insn "*matrix_mdup_mx_<MIMODES:mode>_<MIMODES:mtype>"
+  [(set (match_operand:MIMODES 0 "register_operand" "=xr")
+    (unspec:MIMODES
+      [(match_operand:<MSUBMODE> 1 "register_operand" "r")]
+    UNSPEC_MDUP))]
+  "TARGET_MATRIX"
+ {
+    return "mdup<MIMODES:lsfmt>.m.x\t%0,%1";
+ })
 
 ;; Matrix add
 

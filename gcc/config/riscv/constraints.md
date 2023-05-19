@@ -171,9 +171,6 @@
 (define_register_constraint "xi" "TARGET_MATRIX ? MATRIX_GR_REGS : NO_REGS"
   "A matrix general register (x8 - x15) (if available).")
 
-(define_register_constraint "xt" "TARGET_MATRIX ? MATRIX_MSIZE_REGS : NO_REGS"
-  "MSIZE register (if available).")
-
 (define_constraint "xp"
   "POLY_INT"
   (and (match_code "const_poly_int")

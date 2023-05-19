@@ -111,11 +111,8 @@ ASM_MISA_SPEC
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) riscv_dbx_register_number (REGNO)
-
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
-#define DWARF_FRAME_REGNUM(REGNO) DBX_REGISTER_NUMBER(REGNO)
+#define DWARF_FRAME_REGNUM(REGNO) riscv_frame_register_number (REGNO)
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN RETURN_ADDR_REGNUM
@@ -297,7 +294,7 @@ ASM_MISA_SPEC
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Others.  */							\
-  1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1,   \
   /* Matrix registers.  */						\
   0, 0, 0, 0, 0, 0, 0, 0,			\
@@ -466,7 +463,6 @@ enum reg_class
   VTYPE_REGS,			/* vype register */
   MATRIX_GR_REGS,
   MATRIX_REGS,			/* matrix register */
-  MATRIX_MSIZE_REGS, /* msize register */
   ALL_REGS,			/* all registers */
   LIM_REG_CLASSES		/* max value + 1 */
 };
@@ -493,7 +489,6 @@ enum reg_class
   "VTYPE_REGS", 							\
   "MATRIX_GR_REGS", 							\
   "MATRIX_REGS", 							\
-  "MATRIX_MSIZE_REGS",      \
   "ALL_REGS"								\
 }
 
@@ -522,8 +517,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000008, 0x00000000 },	/* VTYPE_REGS */\
   { 0x0000ff00, 0x00000000, 0x00000000, 0x00000000 },	/* MATRIX_GR_REGS */\
   { 0x00000000, 0x00000000, 0xff000000, 0x00000000 },	/* MATRIX_REGS */\
-  { 0x00000000, 0x00000000, 0x00000070, 0x00000000 },	/* MATRIX_MSIZE_REGS */\
-  { 0xffffffff, 0xffffffff, 0xff00007f, 0xffffffff }	/* ALL_REGS */		\
+  { 0xffffffff, 0xffffffff, 0xff00000f, 0xffffffff }	/* ALL_REGS */		\
 }
 
 /* A C expression whose value is a register class containing hard
@@ -1115,7 +1109,7 @@ extern poly_uint16 riscv_rvm_chunks;
 #define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
 
 #define RISCV_DWARF_VLEN (4096 + 0xc22)
-#define RISCV_DWARF_XMREGSIZE (4096 + 0xcc2)
+#define RISCV_DWARF_MLENB (4096 + 0xcc0)
 
 #ifdef HAVE_POLY_INT_H
 /* Information about a function's frame layout.  */
