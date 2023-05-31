@@ -4,7 +4,6 @@
 #include "riscv-thead-tune.h"
 #include "insn-attr.h"
 #include "riscv-subset.h"
-#include "sched-int.h"
 
 bool
 target_subset_version_p (const char *subset, int major, int minor)
@@ -1013,28 +1012,19 @@ reg_used_following (rtx_insn *insn, rtx reg, bool samebb = true)
 }
 
 /* Scheduling pass is now finished.  */
-bool sched_finish_after_reload = false;
-
+int sched_finish_global = -1;
 static void
 riscv_sched_finish_global (FILE *dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED)
 {
   if (reload_completed)
-    {
-      if (optimize > 0 && flag_schedule_insns_after_reload)
-	{
-	  if (!sched_fusion)
-	    sched_finish_after_reload = true;
-	}
-      else
-	sched_finish_after_reload = true;
-    }
+    sched_finish_global++;
 }
 
 static void
 riscv_asm_function_prologue (FILE *)
 {
-  sched_finish_after_reload = false;
+  sched_finish_global = -1;
 }
 
 /* Implement TARGET_FWPROP_LEGITIMIZE_SET.
