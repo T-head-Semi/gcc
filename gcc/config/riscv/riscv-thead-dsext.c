@@ -224,6 +224,10 @@ can_delete_sext (rtx_insn *insn)
 	continue;
 
       use_insn = DF_REF_INSN (use_of_def->ref);
+
+      if (DEBUG_INSN_P (use_insn))
+	continue;
+
       if (!NONJUMP_INSN_P (use_insn) || GET_CODE (PATTERN (use_insn)) != SET)
 	{
 	  if (dump_file)
@@ -392,7 +396,10 @@ delect_redundancy_sext (void)
 		  rtx_insn *ref_insn;
 
 		  if (DF_REF_IS_ARTIFICIAL (defs->ref))
-		    continue;
+		    {
+		      can_delete = false;
+		      break;
+		    }
 		  ref_insn = DF_REF_INSN (defs->ref);
 
 		  if (!bitmap_bit_p (sext_marked, INSN_UID (ref_insn)))
@@ -404,7 +411,7 @@ delect_redundancy_sext (void)
 		    unatificial_defs ++;
 		}
 
-	      if (!unatificial_defs)
+	      if (can_delete && !unatificial_defs)
 		can_delete = false;
 
 	      /* Detect the sequence:
@@ -419,7 +426,10 @@ delect_redundancy_sext (void)
 		      rtx_insn *ref_insn;
 
 		      if (DF_REF_IS_ARTIFICIAL (defs->ref))
-			continue;
+			{
+			  can_delete = false;
+			  break;
+			}
 		      ref_insn = DF_REF_INSN (defs->ref);
 
 		      if (!is_lbu_insn (ref_insn))
@@ -431,7 +441,7 @@ delect_redundancy_sext (void)
 			unatificial_defs ++;
 		    }
 
-		  if (!unatificial_defs)
+		  if (can_delete && !unatificial_defs)
 		    can_delete = false;
 		}
 

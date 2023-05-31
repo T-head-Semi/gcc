@@ -281,7 +281,7 @@ hook_void_FILEptr_tree (FILE *, tree)
 }
 
 void
-hook_void_rtx (rtx)
+hook_void_rtxptr (rtx *)
 {
 }
 

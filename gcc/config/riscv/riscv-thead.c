@@ -4,6 +4,7 @@
 #include "riscv-thead-tune.h"
 #include "insn-attr.h"
 #include "riscv-subset.h"
+#include "sched-int.h"
 
 bool
 target_subset_version_p (const char *subset, int major, int minor)
@@ -84,29 +85,6 @@ riscv_xthead_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_cod
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
 	  return true;
-	}
-      return false;
-    case IOR:
-      if (TARGET_XTHEAD_SRRIW
-	  && outer_code == SET
-	  && GET_CODE (XEXP (x, 0)) == ASHIFT
-	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTRACT)
-	{
-	  rtx ashift_op0 = XEXP (XEXP (x, 0), 0);
-	  rtx ashift_op1 = XEXP (XEXP (x, 0), 1);
-	  rtx zeroext_op0 = XEXP (XEXP (x, 1), 0);
-	  rtx zeroext_op1 = XEXP (XEXP (x, 1), 1);
-	  rtx zeroext_op2 = XEXP (XEXP (x, 1), 2);
-	  if (REG_P (ashift_op0) && REG_P (zeroext_op0)
-	      && CONST_INT_P (ashift_op1)
-	      && CONST_INT_P (zeroext_op1)
-	      && CONST_INT_P (zeroext_op2)
-	      && INTVAL (ashift_op1) == INTVAL (zeroext_op1)
-	      && (INTVAL (zeroext_op1) + INTVAL (zeroext_op2)) == 32)
-	    {
-		  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
-		  return true;
-	    }
 	}
       return false;
     default:
@@ -1012,19 +990,31 @@ reg_used_following (rtx_insn *insn, rtx reg, bool samebb = true)
 }
 
 /* Scheduling pass is now finished.  */
-int sched_finish_global = -1;
+bool sched_finish_after_reload = false;
+bool sched_finish_executed = false;
+
 static void
 riscv_sched_finish_global (FILE *dump ATTRIBUTE_UNUSED,
 			   int sched_verbose ATTRIBUTE_UNUSED)
 {
   if (reload_completed)
-    sched_finish_global++;
+    {
+      if (optimize > 0 && flag_schedule_insns_after_reload)
+	{
+	  if (!sched_fusion)
+	    sched_finish_after_reload = true;
+	}
+      else
+	sched_finish_after_reload = true;
+    }
+  sched_finish_executed = true;
 }
 
 static void
 riscv_asm_function_prologue (FILE *)
 {
-  sched_finish_global = -1;
+  sched_finish_after_reload = false;
+  sched_finish_executed = false;
 }
 
 /* Implement TARGET_FWPROP_LEGITIMIZE_SET.

@@ -661,43 +661,6 @@
    (set_attr "mode" "DI")]
 )
 
-(define_insn "rotrsi_signext"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
-			   (match_operand    2 "const_int_operand" "QcL"))
-		(sign_extract:DI
-		  (zero_extract:DI (match_dup 1)
-				   (match_dup 2)
-				   (match_operand    3 "const_int_operand" "QcL"))
-		  (const_int 32)
-		  (const_int 0))))]
-  "TARGET_XTHEAD_SRRIW
-   && ((INTVAL (operands[2]) + INTVAL (operands[3])) == 32)"
-  "srriw\t%0, %1, %2"
-  [(set_attr "type" "arith")
-   (set_attr "mode" "DI")]
-)
-
-(define_insn_and_split "*xthead_rotrsi_zeroext"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
-			   (match_operand    2 "const_int_operand" "QcL"))
-		(zero_extract:DI (match_dup 1)
-				 (match_dup 2)
-				 (match_operand    3 "const_int_operand" "QcL"))))]
-  "TARGET_XTHEAD_SRRIW
-   && ((INTVAL (operands[2]) + INTVAL (operands[3])) == 32)"
-  "#"
-  "&& true"
-  [(const_int 0)]
-  {
-    emit_insn (gen_rotrsi_signext (operands[0], operands[1], operands[2],
-				   operands[3]));
-    emit_insn (gen_extzvdi (operands[0], operands[0], GEN_INT (32), GEN_INT (0)));
-    DONE;
-  }
-)
-
 ;; CONDITIONAL MOVE
 ;; ================
 

@@ -142,6 +142,7 @@ extern const riscv_cpu_info *riscv_find_cpu (const char *);
 extern int riscv_get_nf (machine_mode);
 extern int riscv_get_lmul (machine_mode);
 
-extern int sched_finish_global;
+extern bool sched_finish_after_reload;
+extern bool sched_finish_executed;
 
 #endif /* ! GCC_RISCV_PROTOS_H */

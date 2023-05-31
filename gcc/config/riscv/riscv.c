@@ -1385,7 +1385,7 @@ riscv_add_offset (rtx temp, rtx reg, poly_int64 offset)
 	  HOST_WIDE_INT offset_value = offset.to_constant ();
 	  rtx high;
 
-	  if (SMALL_OPERAND (offset_value / 2))
+	  if (SMALL_OPERAND (((offset_value < 0) ? offset_value - 1 : offset_value + 1) / 2))
 	    {
 	      /* If the OFFSET is within 2*SMALL_OPERAND,
 		 use addi + ld/st instead of li + add + ld/st.  */

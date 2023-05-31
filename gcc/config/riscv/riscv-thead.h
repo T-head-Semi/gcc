@@ -44,9 +44,7 @@
 #define HAVE_POST_MODIFY_DISP TARGET_XTHEAD_LDI
 #define HAVE_PRE_MODIFY_DISP  TARGET_XTHEAD_LDI
 
-#define TARGET_XTHEAD_VSPLIT (reload_completed \
-  && ((flag_schedule_insns_after_reload && sched_finish_global > 0) \
-      || !flag_schedule_insns_after_reload))
+#define TARGET_XTHEAD_VSPLIT (reload_completed && (!sched_finish_executed || sched_finish_after_reload))
 
 #define RISCV_TUNE_STRING_DEFAULT	\
   (TARGET_XTHEAD_C ? "c910" :		\
@@ -60,6 +58,7 @@
 
 #define TARGET_XTHEAD_INTERRUPT_HANDLER_P() \
   (cfun->machine->interrupt_handler_p \
+   && !crtl->is_leaf \
    && TARGET_XTHEAD_IPUSH \
    && (cfun->machine->interrupt_mode == USER_MODE \
        || cfun->machine->interrupt_mode == MACHINE_MODE))

@@ -23,6 +23,8 @@
 
 (define_code_iterator clz_ctz_pcnt [clz ctz popcount])
 
+(define_code_iterator ctz_pcnt [ctz popcount])
+
 (define_code_attr bitmanip_optab [(smin "smin")
 				  (smax "smax")
 				  (umin "umin")
@@ -123,9 +125,24 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
+(define_expand "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_ZBB || (!TARGET_64BIT && TARGET_XTHEAD_ZPN)"
+  ""
+)
+
+(define_insn "*clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_ZBB"
+  { return TARGET_64BIT ? "clzw\t%0,%1" : "clz\t%0,%1"; }
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "SI")])
+
 (define_insn "<bitmanip_optab>si2"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
+	(ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_ZBB"
   { return TARGET_64BIT ? "<bitmanip_insn>w\t%0,%1" : "<bitmanip_insn>\t%0,%1"; }
   [(set_attr "type" "bitmanip")

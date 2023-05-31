@@ -6801,7 +6801,7 @@ bool, (HOST_WIDE_INT loop_niter, machine_mode mem_mode), NULL)
 
 DEFHOOK
 (fwprop_legitimize_set, "Legitmize define insn @var{def_set} to enbale forward propagate.",
-void, (rtx *def_set), hook_void_rtx)
+void, (rtx *def_set), hook_void_rtxptr)
 
 /* Leave the boolean fields at the end.  */
 
