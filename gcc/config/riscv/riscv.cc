@@ -1263,7 +1263,7 @@ riscv_v_ext_vls_mode_p (machine_mode mode)
 
 /* Return true if it is either RVV vector mode or RVV tuple mode.  */
 
-static bool
+bool
 riscv_v_ext_mode_p (machine_mode mode)
 {
   return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode)

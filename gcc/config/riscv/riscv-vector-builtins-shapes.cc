@@ -33,6 +33,24 @@
 
 namespace riscv_vector {
 
+/* Check whether the RET and ARGS are valid for the function.  */
+
+static bool
+check_type (tree ret, vec<tree> &args)
+{
+  tree arg;
+  unsigned i;
+
+  if (!ret || (builtin_type_p (ret) && !riscv_v_ext_mode_p (TYPE_MODE (ret))))
+    return false;
+
+  FOR_EACH_VEC_ELT (args, i, arg)
+    if (!arg || (builtin_type_p (arg) && !riscv_v_ext_mode_p (TYPE_MODE (arg))))
+      return false;
+
+  return true;
+}
+
 /* Add one function instance for GROUP, using operand suffix at index OI,
    mode suffix at index PAIR && bi and predication suffix at index pred_idx.  */
 static void
@@ -49,6 +67,10 @@ build_one (function_builder &b, const function_group_info &group,
     group.ops_infos.types[vec_type_idx].index);
   b.allocate_argument_types (function_instance, argument_types);
   b.apply_predication (function_instance, return_type, argument_types);
+
+  if (TARGET_XTHEADVECTOR && !check_type (return_type, argument_types))
+    return;
+
   b.add_overloaded_function (function_instance, *group.shape);
   b.add_unique_function (function_instance, (*group.shape), return_type,
 			 argument_types);

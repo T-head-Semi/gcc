@@ -194,8 +194,8 @@ riscv_pragma_intrinsic (cpp_reader *)
     {
       if (!TARGET_VECTOR)
 	{
-	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' extension "
-		 "enabled",
+	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' or "
+		 "'XTHEADVECTOR' extension enabled",
 		 name);
 	  return;
 	}

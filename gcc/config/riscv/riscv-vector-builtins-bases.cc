@@ -131,23 +131,40 @@ public:
 
     tree type = builtin_types[e.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
-    /* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-	 - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
-	 - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
-	 - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
-	 - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
-	 - e8,m2/e16,m4/e32,m8           --> e8m2
-	 - e8,m4/e16,m8                  --> e8m4
-	 - e8,m8                         --> e8m8
-    */
-    /* SEW.  */
-    e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+    if (!TARGET_XTHEADVECTOR)
+      {
+	/* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-    /* LMUL.  */
-    machine_mode e8_mode
-      = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
-    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
+      - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
+      - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
+      - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
+      - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
+      - e8,m2/e16,m4/e32,m8	   --> e8m2
+      - e8,m4/e16,m8		  --> e8m4
+      - e8,m8			 --> e8m8
+	  */
+	/* SEW.  */
+	e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+
+	/* LMUL.  */
+	machine_mode e8_mode
+	 = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
+	e.add_input_operand (Pmode,
+	gen_int_mode (get_vlmul (e8_mode), Pmode));
+      }
+    else
+      {
+	machine_mode inner_mode = GET_MODE_INNER (mode);
+	/* SEW.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
+
+	/* LMUL.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (get_vlmul (mode), Pmode));
+       }
+
 
     /* TAIL_ANY.  */
     e.add_input_operand (Pmode,
@@ -191,9 +208,16 @@ public:
       {
 	int unspec = ORDERED_P ? UNSPEC_ORDERED : UNSPEC_UNORDERED;
 	if (STORE_P)
-	  return e.use_exact_insn (
-	    code_for_pred_indexed_store (unspec, e.vector_mode (),
-					 e.index_mode ()));
+	  {
+	    if (TARGET_XTHEADVECTOR)
+	      return e.use_exact_insn (
+		code_for_pred_th_indexed_store (unspec, e.vector_mode (),
+						e.index_mode ()));
+	    else
+	      return e.use_exact_insn (
+		code_for_pred_indexed_store (unspec, e.vector_mode (),
+					     e.index_mode ()));
+	  }
 	else
 	  {
 	    unsigned src_eew_bitsize
@@ -201,25 +225,51 @@ public:
 	    unsigned dst_eew_bitsize
 	      = GET_MODE_BITSIZE (GET_MODE_INNER (e.vector_mode ()));
 	    if (dst_eew_bitsize == src_eew_bitsize)
-	      return e.use_exact_insn (
-		code_for_pred_indexed_load_same_eew (unspec, e.vector_mode ()));
+	      {
+		if (TARGET_XTHEADVECTOR)
+		  return e.use_exact_insn (
+		    code_for_pred_th_indexed_load_same_eew (
+		      unspec, e.vector_mode ()));
+		else
+		  return e.use_exact_insn (
+		    code_for_pred_indexed_load_same_eew (
+		      unspec, e.vector_mode ()));
+	      }
 	    else if (dst_eew_bitsize > src_eew_bitsize)
 	      {
 		unsigned factor = dst_eew_bitsize / src_eew_bitsize;
 		switch (factor)
 		  {
-		  case 2:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x2_greater_eew (
-			unspec, e.vector_mode ()));
-		  case 4:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x4_greater_eew (
-			unspec, e.vector_mode ()));
-		  case 8:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x8_greater_eew (
-			unspec, e.vector_mode ()));
+		  case 2: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x2_greater_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x2_greater_eew (
+			  unspec, e.vector_mode ()));
+		  }
+		  case 4: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x4_greater_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x4_greater_eew (
+			  unspec, e.vector_mode ()));
+		  }
+		  case 8: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x8_greater_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x8_greater_eew (
+			  unspec, e.vector_mode ()));
+		  }
 		  default:
 		    gcc_unreachable ();
 		  }
@@ -229,18 +279,36 @@ public:
 		unsigned factor = src_eew_bitsize / dst_eew_bitsize;
 		switch (factor)
 		  {
-		  case 2:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x2_smaller_eew (
-			unspec, e.vector_mode ()));
-		  case 4:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x4_smaller_eew (
-			unspec, e.vector_mode ()));
-		  case 8:
-		    return e.use_exact_insn (
-		      code_for_pred_indexed_load_x8_smaller_eew (
-			unspec, e.vector_mode ()));
+		  case 2: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x2_smaller_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x2_smaller_eew (
+			  unspec, e.vector_mode ()));
+		  }
+		  case 4: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x4_smaller_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x4_smaller_eew (
+			  unspec, e.vector_mode ()));
+		  }
+		  case 8: {
+		    if (TARGET_XTHEADVECTOR)
+		      return e.use_exact_insn (
+			code_for_pred_th_indexed_load_x8_smaller_eew (
+			  unspec, e.vector_mode ()));
+		    else
+		      return e.use_exact_insn (
+			code_for_pred_indexed_load_x8_smaller_eew (
+			  unspec, e.vector_mode ()));
+		  }
 		  default:
 		    gcc_unreachable ();
 		  }
@@ -250,17 +318,35 @@ public:
     else if (LST_TYPE == LST_STRIDED)
       {
 	if (STORE_P)
-	  return e.use_contiguous_store_insn (
-	    code_for_pred_strided_store (e.vector_mode ()));
+	  {
+	    if (TARGET_XTHEADVECTOR)
+	      return e.use_contiguous_store_insn (
+		code_for_pred_th_strided_store (e.vector_mode ()));
+	    else
+	      return e.use_contiguous_store_insn (
+		code_for_pred_strided_store (e.vector_mode ()));
+	  }
 	else
-	  return e.use_contiguous_load_insn (
-	    code_for_pred_strided_load (e.vector_mode ()));
+	  {
+	    if (TARGET_XTHEADVECTOR)
+	      return e.use_contiguous_load_insn (
+		code_for_pred_th_strided_load (e.vector_mode ()));
+	    else
+	      return e.use_contiguous_load_insn (
+		code_for_pred_strided_load (e.vector_mode ()));
+	  }
       }
     else
       {
 	if (STORE_P)
-	  return e.use_contiguous_store_insn (
-	    code_for_pred_store (e.vector_mode ()));
+	  {
+	    if (TARGET_XTHEADVECTOR)
+	      return e.use_contiguous_store_insn (
+		code_for_pred_th_store (e.vector_mode ()));
+	    else
+	      return e.use_contiguous_store_insn (
+		code_for_pred_store (e.vector_mode ()));
+	  }
 	else
 	  return e.use_contiguous_load_insn (
 	    code_for_pred_mov (e.vector_mode ()));
@@ -974,7 +1060,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_pred_popcount (e.vector_mode (), Pmode));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_popcount (e.vector_mode (), Pmode));
+    else
+      return e.use_exact_insn (
+	code_for_pred_popcount (e.vector_mode (), Pmode));
   }
 };
 
@@ -988,7 +1079,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_pred_ffs (e.vector_mode (), Pmode));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_ffs (e.vector_mode (), Pmode));
+    else
+      return e.use_exact_insn (
+	code_for_pred_ffs (e.vector_mode (), Pmode));
   }
 };
 
@@ -1544,8 +1640,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_narrow_fcvt_x_f (UNSPEC, e.arg_mode (0)));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_narrow_fcvt_x_f (UNSPEC, e.arg_mode (0)));
+    else
+      return e.use_exact_insn (
+	code_for_pred_narrow_fcvt_x_f (UNSPEC, e.arg_mode (0)));
   }
 };
 
@@ -1574,12 +1674,32 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_f_w)
-      return e.use_exact_insn (code_for_pred_trunc (e.vector_mode ()));
+      {
+	if (TARGET_XTHEADVECTOR)
+	  return e.use_exact_insn (
+	    code_for_pred_th_trunc (e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_trunc (e.vector_mode ()));
+      }
     if (e.op_info->op == OP_TYPE_x_w)
-      return e.use_exact_insn (code_for_pred_narrow (FLOAT, e.arg_mode (0)));
+      {
+	if (TARGET_XTHEADVECTOR)
+	  return e.use_exact_insn (
+	    code_for_pred_th_narrow (FLOAT, e.arg_mode (0)));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_narrow (FLOAT, e.arg_mode (0)));
+      }
     if (e.op_info->op == OP_TYPE_xu_w)
-      return e.use_exact_insn (
-	code_for_pred_narrow (UNSIGNED_FLOAT, e.arg_mode (0)));
+      {
+	if (TARGET_XTHEADVECTOR)
+	  return e.use_exact_insn (
+	    code_for_pred_th_narrow (UNSIGNED_FLOAT, e.arg_mode (0)));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_narrow (UNSIGNED_FLOAT, e.arg_mode (0)));
+      }
     gcc_unreachable ();
   }
 };
@@ -1947,8 +2067,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_contiguous_load_insn (
-      code_for_pred_fault_load (e.vector_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_contiguous_load_insn (
+	code_for_pred_th_fault_load (e.vector_mode ()));
+    else
+      return e.use_contiguous_load_insn (
+	code_for_pred_fault_load (e.vector_mode ()));
   }
 };
 
@@ -2007,8 +2131,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_unit_strided_store (e.vector_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_unit_strided_store (e.vector_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_unit_strided_store (e.vector_mode ()));
   }
 };
 
@@ -2028,8 +2156,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_strided_load (e.vector_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_strided_load (e.vector_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_strided_load (e.vector_mode ()));
   }
 };
 
@@ -2052,8 +2184,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_strided_store (e.vector_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_strided_store (e.vector_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_strided_store (e.vector_mode ()));
   }
 };
 
@@ -2073,8 +2209,14 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_indexed_load (UNSPEC, e.vector_mode (), e.index_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_indexed_load (
+	  UNSPEC, e.vector_mode (), e.index_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_indexed_load (
+	  UNSPEC, e.vector_mode (), e.index_mode ()));
   }
 };
 
@@ -2097,8 +2239,14 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_indexed_store (UNSPEC, e.vector_mode (), e.index_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_indexed_store (
+	  UNSPEC, e.vector_mode (), e.index_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_indexed_store (
+	  UNSPEC, e.vector_mode (), e.index_mode ()));
   }
 };
 
@@ -2123,7 +2271,12 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_pred_fault_load (e.vector_mode ()));
+    if (TARGET_XTHEADVECTOR)
+      return e.use_exact_insn (
+	code_for_pred_th_fault_load (e.vector_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_fault_load (e.vector_mode ()));
   }
 };
 

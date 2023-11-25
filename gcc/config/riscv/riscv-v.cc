@@ -1292,6 +1292,13 @@ legitimize_move (rtx dest, rtx *srcp)
       return true;
     }
 
+  if (TARGET_XTHEADVECTOR)
+    {
+      emit_insn (gen_th_vmov_whole (mode, Pmode, dest, src,
+				    gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));
+      return true;
+    }
+
   if (riscv_v_ext_vls_mode_p (mode))
     {
       if (GET_MODE_NUNITS (mode).to_constant () <= 31)
