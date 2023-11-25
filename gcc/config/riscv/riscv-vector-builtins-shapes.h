@@ -28,6 +28,8 @@ extern const function_shape *const vsetvl;
 extern const function_shape *const vsetvlmax;
 extern const function_shape *const loadstore;
 extern const function_shape *const indexed_loadstore;
+extern const function_shape *const th_loadstore_width;
+extern const function_shape *const th_indexed_loadstore_width;
 extern const function_shape *const alu;
 extern const function_shape *const alu_frm;
 extern const function_shape *const widen_alu;
