@@ -137,6 +137,10 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 				     riscv_ext_version_value (0, 11));
     }
 
+   if (TARGET_XTHEADVECTOR)
+     builtin_define_with_int_value ("__riscv_th_v_intrinsic",
+				     riscv_ext_version_value (0, 11));
+
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
