@@ -2132,3 +2132,174 @@
   ""
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "SI")])
+
+(define_expand "@pred_mov_width<vlmem_op_attr><mode>"
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand")
+    (if_then_else:V_VLS
+      (unspec:<VM>
+	[(match_operand:<VM> 1 "vector_mask_operand")
+	 (match_operand 4 "vector_length_operand")
+	 (match_operand 5 "const_int_operand")
+	 (match_operand 6 "const_int_operand")
+	 (match_operand 7 "const_int_operand")
+	 (reg:SI VL_REGNUM)
+	 (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VLMEM_OP)
+      (match_operand:V_VLS 3 "vector_move_operand")
+      (match_operand:V_VLS 2 "vector_merge_operand")))]
+  "TARGET_XTHEADVECTOR"
+  {})
+
+(define_insn_and_split "*pred_mov_width<vlmem_op_attr><mode>"
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand"	    "=vr,    vr,    vd,     m,    vr,    vr")
+    (if_then_else:V_VLS
+      (unspec:<VM>
+	[(match_operand:<VM> 1 "vector_mask_operand"	   "vmWc1,   Wc1,    vm, vmWc1,   Wc1,   Wc1")
+	 (match_operand 4 "vector_length_operand"	      "   rK,    rK,    rK,    rK,    rK,    rK")
+	 (match_operand 5 "const_int_operand"		  "    i,     i,     i,     i,     i,     i")
+	 (match_operand 6 "const_int_operand"		  "    i,     i,     i,     i,     i,     i")
+	 (match_operand 7 "const_int_operand"		  "    i,     i,     i,     i,     i,     i")
+	 (reg:SI VL_REGNUM)
+	 (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VLMEM_OP)
+      (match_operand:V_VLS 3 "reg_or_mem_operand"	      "    m,     m,     m,    vr,    vr,    vr")
+      (match_operand:V_VLS 2 "vector_merge_operand"	    "    0,    vu,    vu,    vu,    vu,     0")))]
+  "(TARGET_XTHEADVECTOR
+    && (register_operand (operands[0], <MODE>mode)
+	|| register_operand (operands[3], <MODE>mode)))"
+  "@
+   vl<vlmem_op_attr>.v\t%0,%3%p1
+   vl<vlmem_op_attr>.v\t%0,%3
+   vl<vlmem_op_attr>.v\t%0,%3,%1.t
+   vs<vlmem_op_attr>.v\t%3,%0%p1
+   vmv.v.v\t%0,%3
+   vmv.v.v\t%0,%3"
+  "&& register_operand (operands[0], <MODE>mode)
+   && register_operand (operands[3], <MODE>mode)
+   && satisfies_constraint_vu (operands[2])
+   && INTVAL (operands[7]) == riscv_vector::VLMAX"
+  [(set (match_dup 0) (match_dup 3))]
+  ""
+  [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_store_width<vlmem_op_attr><mode>"
+  [(set (match_operand:VI 0 "memory_operand"		 "+m")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
+	     (match_operand 3 "vector_length_operand"    "   rK")
+	     (match_operand 4 "const_int_operand"	"    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VSMEM_OP)
+	  (match_operand:VI 2 "register_operand"	 "    vr")
+	  (match_dup 0)))]
+  "TARGET_XTHEADVECTOR"
+  "vs<vlmem_op_attr>.v\t%2,%0%p1"
+  [(set_attr "type" "vste")
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type_idx") (const_int 4))
+   (set_attr "vl_op_idx" "3")])
+
+(define_insn "@pred_strided_load_width<vlmem_op_attr><mode>"
+  [(set (match_operand:VI 0 "register_operand"	      "=vr,    vr,    vd")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm")
+	     (match_operand 5 "vector_length_operand"    "   rK,    rK,    rK")
+	     (match_operand 6 "const_int_operand"	"    i,     i,     i")
+	     (match_operand 7 "const_int_operand"	"    i,     i,     i")
+	     (match_operand 8 "const_int_operand"	"    i,     i,     i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VLSMEM_OP)
+	  (unspec:VI
+	    [(match_operand:VI 3 "memory_operand"	 "    m,     m,     m")
+	     (match_operand 4 "pmode_reg_or_0_operand"   "   rJ,    rJ,    rJ")] UNSPEC_TH_VLSMEM_OP)
+	  (match_operand:VI 2 "vector_merge_operand"      "    0,    vu,    vu")))]
+  "TARGET_XTHEADVECTOR"
+  "vls<vlmem_op_attr>.v\t%0,%3,%z4%p1"
+  [(set_attr "type" "vlds")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_strided_store_width<vlmem_op_attr><mode>"
+  [(set (match_operand:VI 0 "memory_operand"		 "+m")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
+	     (match_operand 4 "vector_length_operand"    "   rK")
+	     (match_operand 5 "const_int_operand"	"    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VSSMEM_OP)
+	  (unspec:VI
+	    [(match_operand 2 "pmode_reg_or_0_operand"   "   rJ")
+	     (match_operand:VI 3 "register_operand"       "   vr")] UNSPEC_TH_VSSMEM_OP)
+	  (match_dup 0)))]
+  "TARGET_XTHEADVECTOR"
+  "vss<vlmem_op_attr>.v\t%3,%0,%z2%p1"
+  [(set_attr "type" "vsts")
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type_idx") (const_int 5))])
+
+(define_insn "@pred_indexed_load_width<vlmem_op_attr><mode>"
+  [(set (match_operand:VI 0 "register_operand"	     "=vd, vr,vd, vr")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"  " vm,Wc1,vm,Wc1")
+	     (match_operand 5 "vector_length_operand"     " rK, rK,rK, rK")
+	     (match_operand 6 "const_int_operand"	 "  i,  i, i,  i")
+	     (match_operand 7 "const_int_operand"	 "  i,  i, i,  i")
+	     (match_operand 8 "const_int_operand"	 "  i,  i, i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VLXMEM_OP)
+	  (unspec:VI
+	    [(match_operand 3 "pmode_reg_or_0_operand"    " rJ, rJ,rJ, rJ")
+	     (mem:BLK (scratch))
+	     (match_operand:VI 4 "register_operand" " vr, vr,vr, vr")] UNSPEC_TH_VLXMEM_OP)
+	  (match_operand:VI 2 "vector_merge_operand"       " vu, vu, 0,  0")))]
+  "TARGET_XTHEADVECTOR"
+  "vlx<vlmem_op_attr>.v\t%0,(%z3),%4%p1"
+  [(set_attr "type" "vldux")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_indexed_<vlmem_order_attr>store_width<vlmem_op_attr><mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(unspec:<VM>
+	    [(match_operand:<VM> 0 "vector_mask_operand" "vmWc1")
+	     (match_operand 4 "vector_length_operand"    "   rK")
+	     (match_operand 5 "const_int_operand"	"    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_TH_VSXMEM_OP)
+	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
+	   (match_operand:VI 2 "register_operand" "  vr")
+	   (match_operand:VI 3 "register_operand"  "  vr")] UNSPEC_TH_VSXMEM_OP))]
+  "TARGET_XTHEADVECTOR"
+  "vs<vlmem_order_attr>x<vlmem_op_attr>.v\t%3,(%z1),%2%p0"
+  [(set_attr "type" "vstux")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "@pred_th_extract<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+	(unspec:<VEL>
+	  [(vec_select:<VEL>
+	     (match_operand:V_VLSI 1 "reg_or_mem_operand")
+	     (parallel [(match_operand:<VEL> 2 "register_operand" "r")]))
+	   (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
+  "TARGET_XTHEADVECTOR"
+{
+  if (MEM_P (operands[1]))
+    {
+      emit_move_insn (operands[0], gen_rtx_MEM (<VEL>mode, XEXP (operands[1], 0)));
+      DONE;
+    }
+})
+
+(define_insn "*pred_th_extract<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand"   "=r")
+  (unspec:<VEL>
+    [(vec_select:<VEL>
+       (match_operand:V_VLSI 1 "register_operand" "vr")
+       (parallel [(match_operand:<VEL> 2 "register_operand" "r")]))
+     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
+  "TARGET_XTHEADVECTOR"
+  "vext.x.v\t%0,%1,%2"
+  [(set_attr "type" "vimovvx")
+   (set_attr "mode" "<MODE>")])
