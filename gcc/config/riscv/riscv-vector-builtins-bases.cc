@@ -48,24 +48,8 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
-/* Enumerates types of loads/stores operations.
-   It's only used in here so we don't define it
-   in riscv-vector-builtins-bases.h.  */
-enum lst_type
-{
-  LST_UNIT_STRIDE,
-  LST_STRIDED,
-  LST_INDEXED,
-};
-
-enum frm_op_type
-{
-  NO_FRM,
-  HAS_FRM,
-};
-
 /* Helper function to fold vleff and vlsegff.  */
-static gimple *
+gimple *
 fold_fault_load (gimple_folder &f)
 {
   /* fold fault_load (const *base, size_t *new_vl, size_t vl)
