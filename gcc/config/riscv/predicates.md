@@ -46,8 +46,9 @@
        (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
 
 (define_predicate "csr_operand"
-  (ior (match_operand 0 "const_csr_operand")
-       (match_operand 0 "register_operand")))
+  (ior (and (match_test "!TARGET_XTHEADVECTOR || rtx_equal_p (op, const0_rtx)")
+      (match_operand 0 "const_csr_operand"))
+    (match_operand 0 "register_operand")))
 
 ;; V has 32-bit unsigned immediates.  This happens to be the same constraint as
 ;; the csr_operand, but it's not CSR related.
@@ -403,7 +404,8 @@
 ;; Predicates for the V extension.
 (define_special_predicate "vector_length_operand"
   (ior (match_operand 0 "pmode_register_operand")
-       (match_operand 0 "const_csr_operand")))
+	    (and (match_test "!TARGET_XTHEADVECTOR || rtx_equal_p (op, const0_rtx)")
+     (match_operand 0 "const_csr_operand"))))
 
 (define_special_predicate "autovec_length_operand"
   (ior (match_operand 0 "pmode_register_operand")

@@ -1110,12 +1110,26 @@ public:
     rtx ta = gen_int_mode (get_ta (), Pmode);
     rtx ma = gen_int_mode (get_ma (), Pmode);
 
-    if (change_vtype_only_p ())
-      return gen_vsetvl_vtype_change_only (sew, vlmul, ta, ma);
-    else if (has_vl () && !ignore_vl)
-      return gen_vsetvl (Pmode, get_vl (), avl, sew, vlmul, ta, ma);
-    else
-      return gen_vsetvl_discard_result (Pmode, avl, sew, vlmul, ta, ma);
+    gcc_assert (!TARGET_XTHEADVECTOR || REG_P(avl)
+		|| rtx_equal_p (avl, const0_rtx));
+    if (change_vtype_only_p ()) {
+      if (TARGET_XTHEADVECTOR)
+	return gen_th_vsetvl_vtype_change_only (sew, vlmul, ta, ma);
+      else
+	return gen_vsetvl_vtype_change_only (sew, vlmul, ta, ma);
+    }
+    else if (has_vl () && !ignore_vl) {
+      if (TARGET_XTHEADVECTOR)
+	return gen_th_vsetvl (Pmode, get_vl (), avl, sew, vlmul, ta, ma);
+      else
+	return gen_vsetvl (Pmode, get_vl (), avl, sew, vlmul, ta, ma);
+    }
+    else {
+      if (TARGET_XTHEADVECTOR)
+	return gen_th_vsetvl_discard_result (Pmode, avl, sew, vlmul, ta, ma);
+      else
+	return gen_vsetvl_discard_result (Pmode, avl, sew, vlmul, ta, ma);
+    }
   }
 
   bool operator== (const vsetvl_info &other) const

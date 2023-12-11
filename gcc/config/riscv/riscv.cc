@@ -1263,7 +1263,7 @@ riscv_v_ext_vls_mode_p (machine_mode mode)
 
 /* Return true if it is either RVV vector mode or RVV tuple mode.  */
 
-static bool
+bool
 riscv_v_ext_mode_p (machine_mode mode)
 {
   return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode)
@@ -1314,6 +1314,9 @@ riscv_v_adjust_bytesize (machine_mode mode, int scale)
 {
   if (riscv_v_ext_vector_mode_p (mode))
     {
+      if (TARGET_XTHEADVECTOR)
+	return BYTES_PER_RISCV_VECTOR;
+
       poly_int64 nunits = GET_MODE_NUNITS (mode);
       poly_int64 mode_size = GET_MODE_SIZE (mode);
 
@@ -9238,7 +9241,7 @@ riscv_use_divmod_expander (void)
 static machine_mode
 riscv_preferred_simd_mode (scalar_mode mode)
 {
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::preferred_simd_mode (mode);
 
   return word_mode;
@@ -9589,7 +9592,7 @@ riscv_mode_priority (int, int n)
 unsigned int
 riscv_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::autovectorize_vector_modes (modes, all);
 
   return default_autovectorize_vector_modes (modes, all);
@@ -9647,6 +9650,16 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
     return get_or_create_ssa_default_def (cfun, create_tmp_var (vectype));
 
   return default_preferred_else_value (ifn, vectype, nops, ops);
+}
+
+/* Implements target hook vector_mode_supported_any_target_p.  */
+
+static bool
+riscv_vector_mode_supported_any_target_p (machine_mode mode)
+{
+  if (TARGET_XTHEADVECTOR)
+    return false;
+  return true;
 }
 
 /* Initialize the GCC target structure.  */
@@ -9970,6 +9983,9 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
 
 #undef TARGET_PREFERRED_ELSE_VALUE
 #define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
+#define TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P riscv_vector_mode_supported_any_target_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

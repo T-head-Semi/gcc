@@ -83,7 +83,7 @@
 ;; check. However, we need default value of SEW for vsetvl instruction since there
 ;; is no field for ratio in the vsetvl instruction encoding.
 (define_attr "sew" ""
-  (cond [(eq_attr "mode" "RVVMF64BI,RVVMF32BI,RVVMF16BI,RVVMF8BI,RVVMF4BI,RVVMF2BI,RVVM1BI,\
+  (cond [(eq_attr "mode" "RVVMF8BI,RVVMF4BI,RVVMF2BI,RVVM1BI,\
 			  RVVM8QI,RVVM4QI,RVVM2QI,RVVM1QI,RVVMF2QI,RVVMF4QI,RVVMF8QI,\
 			  RVVM1x8QI,RVVMF2x8QI,RVVMF4x8QI,RVVMF8x8QI,\
 			  RVVM1x7QI,RVVMF2x7QI,RVVMF4x7QI,RVVMF8x7QI,\
@@ -95,6 +95,18 @@
 			  V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI,\
 			  V1BI,V2BI,V4BI,V8BI,V16BI,V32BI,V64BI,V128BI,V256BI,V512BI,V1024BI,V2048BI,V4096BI")
 	 (const_int 8)
+	 (eq_attr "mode" "RVVMF16BI")
+	   (if_then_else (match_test "TARGET_XTHEADVECTOR")
+	     (const_int 16)
+	     (const_int 8))
+	 (eq_attr "mode" "RVVMF32BI")
+	   (if_then_else (match_test "TARGET_XTHEADVECTOR")
+	     (const_int 32)
+	     (const_int 8))
+	 (eq_attr "mode" "RVVMF64BI")
+	   (if_then_else (match_test "TARGET_XTHEADVECTOR")
+	     (const_int 64)
+	     (const_int 8))
 	 (eq_attr "mode" "RVVM8HI,RVVM4HI,RVVM2HI,RVVM1HI,RVVMF2HI,RVVMF4HI,\
 			  RVVM1x8HI,RVVMF2x8HI,RVVMF4x8HI,\
 			  RVVM1x7HI,RVVMF2x7HI,RVVMF4x7HI,\
@@ -155,9 +167,9 @@
 	 (eq_attr "mode" "RVVM4QI,RVVMF2BI") (symbol_ref "riscv_vector::LMUL_4")
 	 (eq_attr "mode" "RVVM2QI,RVVMF4BI") (symbol_ref "riscv_vector::LMUL_2")
 	 (eq_attr "mode" "RVVM1QI,RVVMF8BI") (symbol_ref "riscv_vector::LMUL_1")
-	 (eq_attr "mode" "RVVMF2QI,RVVMF16BI") (symbol_ref "riscv_vector::LMUL_F2")
-	 (eq_attr "mode" "RVVMF4QI,RVVMF32BI") (symbol_ref "riscv_vector::LMUL_F4")
-	 (eq_attr "mode" "RVVMF8QI,RVVMF64BI") (symbol_ref "riscv_vector::LMUL_F8")
+	 (eq_attr "mode" "RVVMF2QI,RVVMF16BI") (symbol_ref "TARGET_XTHEADVECTOR ? riscv_vector::LMUL_1 : riscv_vector::LMUL_F2")
+	 (eq_attr "mode" "RVVMF4QI,RVVMF32BI") (symbol_ref "TARGET_XTHEADVECTOR ? riscv_vector::LMUL_1 : riscv_vector::LMUL_F4")
+	 (eq_attr "mode" "RVVMF8QI,RVVMF64BI") (symbol_ref "TARGET_XTHEADVECTOR ? riscv_vector::LMUL_1 : riscv_vector::LMUL_F8")
 	 (eq_attr "mode" "RVVM8HI") (symbol_ref "riscv_vector::LMUL_8")
 	 (eq_attr "mode" "RVVM4HI") (symbol_ref "riscv_vector::LMUL_4")
 	 (eq_attr "mode" "RVVM2HI") (symbol_ref "riscv_vector::LMUL_2")
@@ -887,6 +899,8 @@
   (cond [(eq_attr "type" "vfalu,vfwalu,vfmul,vfdiv,vfwmul")
 	 (symbol_ref "riscv_vector::FRM_DYN")]
 	(symbol_ref "riscv_vector::FRM_NONE")))
+
+(include "thead-vector.md")
 
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
