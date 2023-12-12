@@ -773,7 +773,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	bnez a2, loop                   # Any more?
 	ret                             # Return
   */
-  if (!TARGET_VECTOR)
+  if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
   HOST_WIDE_INT potential_ew
     = (MIN (MIN (MEM_ALIGN (src_in), MEM_ALIGN (dst_in)), BITS_PER_WORD)

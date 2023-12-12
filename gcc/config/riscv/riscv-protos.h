@@ -153,6 +153,7 @@ extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
 extern bool riscv_v_ext_tuple_mode_p (machine_mode);
 extern bool riscv_v_ext_vls_mode_p (machine_mode);
+extern bool riscv_v_ext_mode_p (machine_mode);
 extern int riscv_get_v_regno_alignment (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
