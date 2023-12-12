@@ -83,6 +83,37 @@ extern const function_base *const th_vloxseg;
 extern const function_base *const th_vsuxseg;
 extern const function_base *const th_vsoxseg;
 extern const function_base *const th_vlsegff;
+extern const function_base *const th_vlb;
+extern const function_base *const th_vlh;
+extern const function_base *const th_vlw;
+extern const function_base *const th_vlbu;
+extern const function_base *const th_vlhu;
+extern const function_base *const th_vlwu;
+extern const function_base *const th_vsb;
+extern const function_base *const th_vsh;
+extern const function_base *const th_vsw;
+extern const function_base *const th_vlsb;
+extern const function_base *const th_vlsh;
+extern const function_base *const th_vlsw;
+extern const function_base *const th_vlsbu;
+extern const function_base *const th_vlshu;
+extern const function_base *const th_vlswu;
+extern const function_base *const th_vssb;
+extern const function_base *const th_vssh;
+extern const function_base *const th_vssw;
+extern const function_base *const th_vlxb;
+extern const function_base *const th_vlxh;
+extern const function_base *const th_vlxw;
+extern const function_base *const th_vlxbu;
+extern const function_base *const th_vlxhu;
+extern const function_base *const th_vlxwu;
+extern const function_base *const th_vsxb;
+extern const function_base *const th_vsxh;
+extern const function_base *const th_vsxw;
+extern const function_base *const th_vsuxb;
+extern const function_base *const th_vsuxh;
+extern const function_base *const th_vsuxw;
+extern const function_base *const th_vext_x_v;
 }
 
 } // end namespace riscv_vector
