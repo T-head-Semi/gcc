@@ -63,6 +63,10 @@
   (ior (match_operand 0 "const_csr_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "vector_csr_operand"
+  (ior (match_operand 0 "const_csr_operand")
+       (match_operand 0 "register_operand")))
+
 ;; V has 32-bit unsigned immediates.  This happens to be the same constraint as
 ;; the csr_operand, but it's not CSR related.
 (define_predicate "vector_scalar_shift_operand"
