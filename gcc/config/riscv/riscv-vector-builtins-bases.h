@@ -21,7 +21,26 @@
 #ifndef GCC_RISCV_VECTOR_BUILTINS_BASES_H
 #define GCC_RISCV_VECTOR_BUILTINS_BASES_H
 
+#include "gimple.h"
+#include "riscv-vector-builtins.h"
+
 namespace riscv_vector {
+
+/* Enumerates types of loads/stores operations.  */
+enum lst_type
+{
+  LST_UNIT_STRIDE,
+  LST_STRIDED,
+  LST_INDEXED,
+};
+
+enum frm_op_type
+{
+  NO_FRM,
+  HAS_FRM,
+};
+
+gimple *fold_fault_load (gimple_folder &f);
 
 namespace bases {
 extern const function_base *const vsetvl;
