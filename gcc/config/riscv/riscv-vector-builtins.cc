@@ -51,6 +51,7 @@
 #include "riscv-vector-builtins.h"
 #include "riscv-vector-builtins-shapes.h"
 #include "riscv-vector-builtins-bases.h"
+#include "thead-vector-builtins.h"
 
 using namespace riscv_vector;
 
@@ -2685,8 +2686,14 @@ static CONSTEXPR const function_type_info function_types[] = {
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
-  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO},
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, RVV_REQUIRE_VECTOR},
 #include "riscv-vector-builtins-functions.def"
+#undef DEF_RVV_FUNCTION
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, RVV_REQUIRE_XTHEADVECTOR},
+#define DEF_THEAD_RVV_FUNCTION(NAME, BASE, SHAPE, PREDS, OPS_INFO)             \
+  {#NAME, &bases::BASE, &shapes::SHAPE, PREDS, OPS_INFO, RVV_REQUIRE_XTHEADVECTOR},
+#include "thead-vector-builtins-functions.def"
 };
 
 /* The RVV types, with their built-in
@@ -3066,6 +3073,10 @@ check_required_extensions (const function_instance &instance)
     riscv_isa_flags |= RVV_REQUIRE_FULL_V;
   if (TARGET_MIN_VLEN > 32)
     riscv_isa_flags |= RVV_REQUIRE_MIN_VLEN_64;
+  if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
+    riscv_isa_flags |= RVV_REQUIRE_VECTOR;
+  if (TARGET_XTHEADVECTOR)
+    riscv_isa_flags |= RVV_REQUIRE_XTHEADVECTOR;
 
   uint64_t missing_extensions = required_extensions & ~riscv_isa_flags;
   if (missing_extensions != 0)
@@ -4413,7 +4424,10 @@ handle_pragma_vector ()
     = new hash_table<non_overloaded_registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    builder.register_function_group (function_groups[i]);
+    if (TARGET_XTHEADVECTOR && function_groups[i].required & RVV_REQUIRE_XTHEADVECTOR)
+      builder.register_function_group (function_groups[i]);
+    else if (!TARGET_XTHEADVECTOR && function_groups[i].required & RVV_REQUIRE_VECTOR)
+      builder.register_function_group (function_groups[i]);
 }
 
 /* Return the function decl with RVV function subcode CODE, or error_mark_node
