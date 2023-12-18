@@ -5595,6 +5595,32 @@ riscv_get_v_regno_alignment (machine_mode mode)
   return lmul;
 }
 
+void
+riscv_asm_output_opcode(FILE *asm_out_file, const char *p)
+{
+  if (!TARGET_XTHEADVECTOR)
+    return;
+
+  if (current_output_insn == NULL_RTX)
+    return;
+
+  /* We need to handle the 'vset' special case here since it cannot
+     be controlled by vector mode. */
+  if (!strncmp (p, "vset", 4))
+    {
+      fputs ("th.", asm_out_file);
+      return;
+    }
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (current_output_insn), ALL)
+    if (*iter && riscv_v_ext_mode_p (GET_MODE (*iter)) && p[0] == 'v')
+      {
+	fputs ("th.", asm_out_file);
+	return;
+      }
+}
+
 /* Implement TARGET_PRINT_OPERAND.  The RISCV-specific operand codes are:
 
    'h'	Print the high-part relocation associated with OP, after stripping
