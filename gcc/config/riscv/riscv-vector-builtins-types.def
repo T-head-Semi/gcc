@@ -24,10 +24,46 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_I_OPS(TYPE, REQUIRE)
 #endif
 
+/* Use "DEF_RVV_I8_OPS" macro include some signed integer (i8/i16/i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_I8_OPS
+#define DEF_RVV_I8_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_I16_OPS" macro include some signed integer (i16/i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_I16_OPS
+#define DEF_RVV_I16_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_I32_OPS" macro include some signed integer (i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_I32_OPS
+#define DEF_RVV_I32_OPS(TYPE, REQUIRE)
+#endif
+
 /* Use "DEF_RVV_U_OPS" macro include all unsigned integer which will be
    iterated and registered as intrinsic functions.  */
 #ifndef DEF_RVV_U_OPS
 #define DEF_RVV_U_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_U8_OPS" macro include some unsigned integer (i8/i16/i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_U8_OPS
+#define DEF_RVV_U8_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_U16_OPS" macro include some unsigned integer (i16/i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_U16_OPS
+#define DEF_RVV_U16_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_U32_OPS" macro include some unsigned integer (i32/i64)
+   which will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_U32_OPS
+#define DEF_RVV_U32_OPS(TYPE, REQUIRE)
 #endif
 
 /* Use "DEF_RVV_F_OPS" macro include all floating-point which will be
@@ -362,6 +398,45 @@ DEF_RVV_I_OPS (vint64m2_t, RVV_REQUIRE_ELEN_64)
 DEF_RVV_I_OPS (vint64m4_t, RVV_REQUIRE_ELEN_64)
 DEF_RVV_I_OPS (vint64m8_t, RVV_REQUIRE_ELEN_64)
 
+DEF_RVV_I8_OPS (vint8m1_t, 0)
+DEF_RVV_I8_OPS (vint8m2_t, 0)
+DEF_RVV_I8_OPS (vint8m4_t, 0)
+DEF_RVV_I8_OPS (vint8m8_t, 0)
+DEF_RVV_I8_OPS (vint16m1_t, 0)
+DEF_RVV_I8_OPS (vint16m2_t, 0)
+DEF_RVV_I8_OPS (vint16m4_t, 0)
+DEF_RVV_I8_OPS (vint16m8_t, 0)
+DEF_RVV_I8_OPS (vint32m1_t, 0)
+DEF_RVV_I8_OPS (vint32m2_t, 0)
+DEF_RVV_I8_OPS (vint32m4_t, 0)
+DEF_RVV_I8_OPS (vint32m8_t, 0)
+DEF_RVV_I8_OPS (vint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I8_OPS (vint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I8_OPS (vint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I8_OPS (vint64m8_t, RVV_REQUIRE_ELEN_64)
+
+DEF_RVV_I16_OPS (vint16m1_t, 0)
+DEF_RVV_I16_OPS (vint16m2_t, 0)
+DEF_RVV_I16_OPS (vint16m4_t, 0)
+DEF_RVV_I16_OPS (vint16m8_t, 0)
+DEF_RVV_I16_OPS (vint32m1_t, 0)
+DEF_RVV_I16_OPS (vint32m2_t, 0)
+DEF_RVV_I16_OPS (vint32m4_t, 0)
+DEF_RVV_I16_OPS (vint32m8_t, 0)
+DEF_RVV_I16_OPS (vint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I16_OPS (vint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I16_OPS (vint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I16_OPS (vint64m8_t, RVV_REQUIRE_ELEN_64)
+
+DEF_RVV_I32_OPS (vint32m1_t, 0)
+DEF_RVV_I32_OPS (vint32m2_t, 0)
+DEF_RVV_I32_OPS (vint32m4_t, 0)
+DEF_RVV_I32_OPS (vint32m8_t, 0)
+DEF_RVV_I32_OPS (vint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I32_OPS (vint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I32_OPS (vint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_I32_OPS (vint64m8_t, RVV_REQUIRE_ELEN_64)
+
 DEF_RVV_U_OPS (vuint8mf8_t, RVV_REQUIRE_MIN_VLEN_64)
 DEF_RVV_U_OPS (vuint8mf4_t, 0)
 DEF_RVV_U_OPS (vuint8mf2_t, 0)
@@ -384,6 +459,45 @@ DEF_RVV_U_OPS (vuint64m1_t, RVV_REQUIRE_ELEN_64)
 DEF_RVV_U_OPS (vuint64m2_t, RVV_REQUIRE_ELEN_64)
 DEF_RVV_U_OPS (vuint64m4_t, RVV_REQUIRE_ELEN_64)
 DEF_RVV_U_OPS (vuint64m8_t, RVV_REQUIRE_ELEN_64)
+
+DEF_RVV_U8_OPS (vuint8m1_t, 0)
+DEF_RVV_U8_OPS (vuint8m2_t, 0)
+DEF_RVV_U8_OPS (vuint8m4_t, 0)
+DEF_RVV_U8_OPS (vuint8m8_t, 0)
+DEF_RVV_U8_OPS (vuint16m1_t, 0)
+DEF_RVV_U8_OPS (vuint16m2_t, 0)
+DEF_RVV_U8_OPS (vuint16m4_t, 0)
+DEF_RVV_U8_OPS (vuint16m8_t, 0)
+DEF_RVV_U8_OPS (vuint32m1_t, 0)
+DEF_RVV_U8_OPS (vuint32m2_t, 0)
+DEF_RVV_U8_OPS (vuint32m4_t, 0)
+DEF_RVV_U8_OPS (vuint32m8_t, 0)
+DEF_RVV_U8_OPS (vuint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U8_OPS (vuint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U8_OPS (vuint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U8_OPS (vuint64m8_t, RVV_REQUIRE_ELEN_64)
+
+DEF_RVV_U16_OPS (vuint16m1_t, 0)
+DEF_RVV_U16_OPS (vuint16m2_t, 0)
+DEF_RVV_U16_OPS (vuint16m4_t, 0)
+DEF_RVV_U16_OPS (vuint16m8_t, 0)
+DEF_RVV_U16_OPS (vuint32m1_t, 0)
+DEF_RVV_U16_OPS (vuint32m2_t, 0)
+DEF_RVV_U16_OPS (vuint32m4_t, 0)
+DEF_RVV_U16_OPS (vuint32m8_t, 0)
+DEF_RVV_U16_OPS (vuint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U16_OPS (vuint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U16_OPS (vuint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U16_OPS (vuint64m8_t, RVV_REQUIRE_ELEN_64)
+
+DEF_RVV_U32_OPS (vuint32m1_t, 0)
+DEF_RVV_U32_OPS (vuint32m2_t, 0)
+DEF_RVV_U32_OPS (vuint32m4_t, 0)
+DEF_RVV_U32_OPS (vuint32m8_t, 0)
+DEF_RVV_U32_OPS (vuint64m1_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U32_OPS (vuint64m2_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U32_OPS (vuint64m4_t, RVV_REQUIRE_ELEN_64)
+DEF_RVV_U32_OPS (vuint64m8_t, RVV_REQUIRE_ELEN_64)
 
 DEF_RVV_F_OPS (vfloat16mf4_t, RVV_REQUIRE_ELEN_FP_16 | RVV_REQUIRE_MIN_VLEN_64)
 DEF_RVV_F_OPS (vfloat16mf2_t, RVV_REQUIRE_ELEN_FP_16)
@@ -1356,7 +1470,13 @@ DEF_RVV_TUPLE_OPS (vfloat64m2x4_t, RVV_REQUIRE_ELEN_FP_64)
 DEF_RVV_TUPLE_OPS (vfloat64m4x2_t, RVV_REQUIRE_ELEN_FP_64)
 
 #undef DEF_RVV_I_OPS
+#undef DEF_RVV_I8_OPS
+#undef DEF_RVV_I16_OPS
+#undef DEF_RVV_I32_OPS
 #undef DEF_RVV_U_OPS
+#undef DEF_RVV_U8_OPS
+#undef DEF_RVV_U16_OPS
+#undef DEF_RVV_U32_OPS
 #undef DEF_RVV_F_OPS
 #undef DEF_RVV_B_OPS
 #undef DEF_RVV_WEXTI_OPS
