@@ -89,6 +89,68 @@ public:
   }
 };
 
+
+/* Implements
+ * th.vl(b/h/w)[u].v/th.vs(b/h/w)[u].v/th.vls(b/h/w)[u].v/th.vss(b/h/w)[u].v/
+ * th.vlx(b/h/w)[u].v/th.vs[u]x(b/h/w).v
+ * codegen.  */
+template<bool STORE_P, lst_type LST_TYPE, int UNSPEC>
+class th_loadstore_width : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return !STORE_P; }
+  bool apply_mask_policy_p () const override { return !STORE_P; }
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    if (STORE_P)
+      return CP_WRITE_MEMORY;
+    else
+      return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    if (STORE_P || LST_TYPE == LST_INDEXED)
+      return true;
+    return pred != PRED_TYPE_none;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    gcc_assert (TARGET_XTHEADVECTOR);
+    if (LST_TYPE == LST_INDEXED)
+      {
+	if (STORE_P)
+	  return e.use_exact_insn (
+	    code_for_pred_indexed_store_width (UNSPEC, UNSPEC,
+					       e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_indexed_load_width (UNSPEC, e.vector_mode ()));
+      }
+    else if (LST_TYPE == LST_STRIDED)
+      {
+	if (STORE_P)
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_strided_store_width (UNSPEC, e.vector_mode ()));
+	else
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_strided_load_width (UNSPEC, e.vector_mode ()));
+      }
+    else
+      {
+	if (STORE_P)
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_store_width (UNSPEC, e.vector_mode ()));
+	else
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_mov_width (UNSPEC, e.vector_mode ()));
+      }
+  }
+};
+
+
 /* Implements
  * vle.v/vse.v/vlm.v/vsm.v/vlse.v/vsse.v/vluxei.v/vloxei.v/vsuxei.v/vsoxei.v
  * codegen.  */
@@ -616,6 +678,23 @@ public:
   }
 };
 
+/* Implements vext.x.v.  */
+class th_extract : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    gcc_assert (TARGET_XTHEADVECTOR);
+    return e.use_exact_insn (code_for_pred_th_extract (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const th_vsetvl<false> th_vsetvl_obj;
 static CONSTEXPR const th_vsetvl<true> th_vsetvlmax_obj;
 static CONSTEXPR const th_loadstore<false, LST_UNIT_STRIDE, false> th_vle_obj;
@@ -675,6 +754,37 @@ static CONSTEXPR const th_seg_indexed_load<UNSPEC_ORDERED> th_vloxseg_obj;
 static CONSTEXPR const th_seg_indexed_store<UNSPEC_UNORDERED> th_vsuxseg_obj;
 static CONSTEXPR const th_seg_indexed_store<UNSPEC_ORDERED> th_vsoxseg_obj;
 static CONSTEXPR const th_vlsegff th_vlsegff_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLB> th_vlb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLBU> th_vlbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLH> th_vlh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLHU> th_vlhu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLW> th_vlw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLWU> th_vlwu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLB> th_vsb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLH> th_vsh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLW> th_vsw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSB> th_vlsb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSBU> th_vlsbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSH> th_vlsh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSHU> th_vlshu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSW> th_vlsw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSWU> th_vlswu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSB> th_vssb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSH> th_vssh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSW> th_vssw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXB> th_vlxb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXBU> th_vlxbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXH> th_vlxh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXHU> th_vlxhu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXW> th_vlxw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXWU> th_vlxwu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXB> th_vsxb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXH> th_vsxh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXW> th_vsxw_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXB> th_vsuxb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXH> th_vsuxh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXW> th_vsuxw_obj;
+static CONSTEXPR const th_extract th_vext_x_v_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -740,5 +850,36 @@ BASE (th_vloxseg)
 BASE (th_vsuxseg)
 BASE (th_vsoxseg)
 BASE (th_vlsegff)
+BASE (th_vlb)
+BASE (th_vlh)
+BASE (th_vlw)
+BASE (th_vlbu)
+BASE (th_vlhu)
+BASE (th_vlwu)
+BASE (th_vsb)
+BASE (th_vsh)
+BASE (th_vsw)
+BASE (th_vlsb)
+BASE (th_vlsh)
+BASE (th_vlsw)
+BASE (th_vlsbu)
+BASE (th_vlshu)
+BASE (th_vlswu)
+BASE (th_vssb)
+BASE (th_vssh)
+BASE (th_vssw)
+BASE (th_vlxb)
+BASE (th_vlxh)
+BASE (th_vlxw)
+BASE (th_vlxbu)
+BASE (th_vlxhu)
+BASE (th_vlxwu)
+BASE (th_vsxb)
+BASE (th_vsxh)
+BASE (th_vsxw)
+BASE (th_vsuxb)
+BASE (th_vsuxh)
+BASE (th_vsuxw)
+BASE (th_vext_x_v)
 
 } // end namespace riscv_vector
