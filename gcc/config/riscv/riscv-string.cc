@@ -808,6 +808,9 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	bnez a2, loop                   # Any more?
 	ret                             # Return
   */
+   if (TARGET_XTHEADVECTOR)
+    return false;
+
   gcc_assert (TARGET_VECTOR);
 
   HOST_WIDE_INT potential_ew

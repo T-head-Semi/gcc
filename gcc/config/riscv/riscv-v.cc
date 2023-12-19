@@ -1444,6 +1444,13 @@ legitimize_move (rtx dest, rtx *srcp)
       return true;
     }
 
+  if (TARGET_XTHEADVECTOR)
+      {
+	emit_insn (gen_pred_th_whole_mov (mode, dest, src,
+					  RVV_VLMAX, GEN_INT(VLMAX)));
+	return true;
+      }
+
   if (riscv_v_ext_vls_mode_p (mode))
     {
       if (GET_MODE_NUNITS (mode).to_constant () <= 31)
@@ -1693,7 +1700,7 @@ get_prefer_tail_policy ()
      compiler pick up either agnostic or undisturbed. Maybe we
      will have a compile option like -mprefer=agnostic to set
      this value???.  */
-  return TAIL_ANY;
+  return TARGET_XTHEADVECTOR ? TAIL_AGNOSTIC : TAIL_ANY;
 }
 
 /* Get prefer mask policy.  */
@@ -1704,7 +1711,7 @@ get_prefer_mask_policy ()
      compiler pick up either agnostic or undisturbed. Maybe we
      will have a compile option like -mprefer=agnostic to set
      this value???.  */
-  return MASK_ANY;
+  return TARGET_XTHEADVECTOR ? MASK_UNDISTURBED : MASK_ANY;
 }
 
 /* Get avl_type rtx.  */
@@ -4294,7 +4301,7 @@ cmp_lmul_gt_one (machine_mode mode)
 bool
 vls_mode_valid_p (machine_mode vls_mode)
 {
-  if (!TARGET_VECTOR)
+  if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
 
   if (riscv_autovec_preference == RVV_SCALABLE)

@@ -109,6 +109,8 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
 #define RVV_REQUIRE_MIN_VLEN_64 (1 << 5)	/* Require TARGET_MIN_VLEN >= 64.  */
 #define RVV_REQUIRE_ELEN_FP_16 (1 << 6) /* Require FP ELEN >= 32.  */
+#define RVV_REQUIRE_VECTOR (1 << 7) /* Require TARGET_VECTOR.  */
+#define RVV_REQUIRE_XTHEADVECTOR (1 << 8) /* Require TARGET_XTHEADVECTOR.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
@@ -232,6 +234,8 @@ struct function_group_info
      on the index value.  */
   const predication_type_index *preds;
   const rvv_op_info ops_infos;
+
+  const uint64_t required;
 };
 
 class GTY ((user)) function_instance
