@@ -35,6 +35,15 @@ enum riscv_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLS_GD + 1)
 
+enum mlmul_type
+{
+  LMUL_1 = 0,
+  LMUL_2,
+  LMUL_4,
+  LMUL_8,
+  LMUL_NONE
+};
+
 /* Routines implemented in riscv.c.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
@@ -88,6 +97,9 @@ extern void riscv_expand_vtuple_create (rtx *);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
 
+/* Routines implemented in thead-matrix.c.  */
+enum mlmul_type th_m_get_mlmul (machine_mode);
+
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
 
@@ -110,6 +122,9 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 
 /* T-Head */
+rtl_opt_pass * make_pass_mcfg (gcc::context *ctxt);
+#define RVM_X0_REG gen_rtx_REG (SImode, X0_REGNUM)
+
 rtl_opt_pass * make_pass_delete_redundancy_sext1 (gcc::context *ctxt);
 rtl_opt_pass * make_pass_delete_redundancy_sext2 (gcc::context *ctxt);
 rtl_opt_pass * make_pass_xthead_dvsetvl (gcc::context *ctxt);

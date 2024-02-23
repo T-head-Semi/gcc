@@ -134,37 +134,6 @@
   UNSPEC_VSETVL
   UNSPEC_VWLDST
 
-  ;; Matrix unspecs.
-  UNSPEC_SET_MSIZE
-  UNSPEC_USE_MSIZE
-  UNSPEC_MRELEASE
-  UNSPEC_MZERO
-  UNSPEC_READ_MLENB
-  UNSPEC_MLD_MST
-  UNSPEC_MLD_MST_STREAM
-  UNSPEC_MMOVE
-  UNSPEC_MDUP
-  UNSPEC_MADD
-  UNSPEC_MSUB
-  UNSPEC_MSRA
-  UNSPEC_MN4CLIP
-  UNSPEC_MN4CLIPU
-  UNSPEC_MMUL
-  UNSPEC_MMULH
-  UNSPEC_FMMACC
-  UNSPEC_FWMMACC
-  UNSPEC_MMAQASS
-  UNSPEC_MMAQAUU
-  UNSPEC_MMAQAUS
-  UNSPEC_MMAQASU
-  UNSPEC_PMMAQASS
-  UNSPEC_PMMAQAUU
-  UNSPEC_PMMAQAUS
-  UNSPEC_PMMAQASU
-  UNSPEC_WHOLE_SL
-  UNSPEC_MCONVERT
- 
-
   ;; Segment load/store
   UNSPEC_SEG_STORE
   UNSPEC_SEG_UNORDERED_STORE
@@ -331,7 +300,8 @@
    vfadd,vfsgnj,vfmul,vfwmul,vfmadd,vfwmadd,vfred,vfredo,vfredu,vfwred,vfmove,vfmax,vfcmp,vfcvt,
    vfdiv,vfsqrt,vfrec,vfclass,
 
-   mset,mload,mloadx2,mstore,mstorex2,mmov,mmovx2,madd,mmul,mfmul,mshift,mn4clip,
+   mcfg,mldr,mstr,mmovr,mld,mst,mmov,mzero,madd,msub,mmul,mmulh,mfmacc,mmaqa,mshift,mrelease,mcsr,
+
    idivmod"
   (cond [(eq_attr "got" "load") (const_string "load")
 
@@ -622,7 +592,7 @@
   "nothing")
 
 (include "riscv-thead.md")
-(include "riscv-matrix.md")
+(include "thead-matrix.md")
 
 ;;
 ;;  ....................

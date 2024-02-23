@@ -6,3 +6,4 @@ INSERT_PASS_BEFORE (pass_ree, 1, pass_delete_redundancy_sext1);
 INSERT_PASS_AFTER (pass_ree, 1, pass_delete_redundancy_sext2);
 INSERT_PASS_AFTER (pass_thread_prologue_and_epilogue, 1, pass_xthead_dread_vlenb);
 INSERT_PASS_AFTER (pass_regrename, 1, pass_xthead_dread_vlenb_after_rnreg);
+INSERT_PASS_BEFORE (pass_fast_rtl_dce, 1, pass_mcfg);

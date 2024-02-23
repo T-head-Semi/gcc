@@ -312,7 +312,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 poly_uint16 riscv_rvv_chunks;
 
 /* The number of 64-bit elements in an matrix.  */
-poly_uint16 riscv_rvm_chunks;
+poly_uint16 riscv_matrix_chunks;
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
@@ -901,7 +901,7 @@ riscv_valid_offset_p (rtx x, machine_mode mode)
   if (TARGET_VECTOR && VECTOR_MODE_P (mode))
     return false;
 
-  if(TARGET_MATRIX && riscv_matrix_mode (mode))
+  if(TARGET_MATRIX && th_m_ext_mode_p (mode))
     return false;
 
   /* We may need to split multiword moves, so make sure that every word
@@ -996,7 +996,7 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       && !riscv_classify_address_vector (info, x, mode, strict_p))
     return false;
 
-  if(TARGET_MATRIX && riscv_matrix_mode (mode)
+  if(TARGET_MATRIX && th_m_ext_mode_p (mode)
       && !riscv_classify_address_vector (info, x, mode, strict_p))
     return false;
 
@@ -1039,7 +1039,7 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       /* Vector load/store disallow LO_SUM.  */
       if (TARGET_VECTOR && VECTOR_MODE_P (mode))
 	return false;
-      if(TARGET_MATRIX && riscv_matrix_mode (mode))
+      if(TARGET_MATRIX && th_m_ext_mode_p (mode))
 	return false;
 
       info->type = ADDRESS_LO_SUM;
@@ -1834,7 +1834,7 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       rtx tmp0 = gen_reg_rtx (word_mode);
       rtx tmp1 = gen_reg_rtx (word_mode);
       rtx tmp2 = gen_reg_rtx (word_mode);
-      rtx tmp3 = TARGET_MATRIX_TEMP (Pmode);
+      rtx tmp3 = gen_reg_rtx (word_mode);
       emit_insn (riscv_gen_load_poly_int (tmp0, tmp1, tmp2, tmp3, value));
       emit_move_insn (dest, tmp0);
       return true;
@@ -4957,7 +4957,7 @@ riscv_gen_load_poly_int (rtx target, rtx tmp1, rtx tmp2, rtx tmp3, poly_int64 va
 
       HOST_WIDE_INT mlenb_mul_int = matrix_offset / UNITS_PER_M_REG.coeffs[2];
 
-      emit_insn (gen_read_mlenb (tmp3));
+      emit_insn (gen_matrix_read_xmlenb (tmp3));
       emit_move_insn (tmp2, gen_int_mode (mlenb_mul_int, Pmode));
 
       if (vector_offset == 0)
@@ -5598,8 +5598,8 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
     }
   else if (MATRIX_REG_P (regno))
     {
-      if (riscv_matrix_x2_mode (mode))
-	return 2;
+      if (th_m_ext_mode_p (mode))
+	return (1 << th_m_get_mlmul (mode));
       else
 	return 1;
     }
@@ -5647,6 +5647,11 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     }
   else if (VECT_REG_P (regno))
    {
+      /* The mode of the matrix should be excluded, because the mode of the
+	 matrix is also generated based on the vector.  */
+      if (th_m_ext_mode_p (mode))
+	return false;
+
       int align = -1;
       if (!VECT_REG_P (regno + nregs -1))
 	return false;
@@ -5701,12 +5706,13 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     }
   else if (MATRIX_REG_P (regno))
     {
-      if (!riscv_matrix_mode (mode))
+      if (!th_m_ext_mode_p (mode))
 	return false;
 
-      if (riscv_matrix_x2_mode (mode) && ((regno & 1) !=0)){
+      unsigned mlmul = (1 << th_m_get_mlmul (mode));
+      /* Check alignment requirement for matrix mode.  */
+      if ((regno & (mlmul - 1)) != 0)
 	return false;
-      }
     }
   else
     return false;
@@ -6000,7 +6006,7 @@ riscv_option_override (void)
   else
     riscv_rvv_chunks = poly_uint16 (((int) riscv_rvv_vector_bits / 64), 0, 0);
 
-  riscv_rvm_chunks = poly_uint16 (2, 0, 2);
+  riscv_matrix_chunks = poly_uint16 (2, 0, 2);
 
   if (TARGET_XTHEAD)
     riscv_xthead_option_override (tune_param, &global_options, &global_options_set);
@@ -6044,13 +6050,14 @@ riscv_conditional_register_usage (void)
       fixed_regs[VTYPE_REGNUM] = call_used_regs[VTYPE_REGNUM] = 1;
     }
 
-  if (!TARGET_MATRIX){
+  if (!TARGET_MATRIX)
+    {
       for (int regno = MATRIX_REG_FIRST; regno <= MATRIX_REG_LAST; regno++)
 	fixed_regs[regno] = call_used_regs[regno] = 1;
       fixed_regs[MATRIX_SIZE_M_REGNUM] = call_used_regs[MATRIX_SIZE_M_REGNUM] = 1;
       fixed_regs[MATRIX_SIZE_N_REGNUM] = call_used_regs[MATRIX_SIZE_N_REGNUM] = 1;
       fixed_regs[MATRIX_SIZE_K_REGNUM] = call_used_regs[MATRIX_SIZE_K_REGNUM] = 1;
-  }
+    }
 
   if (target_subset_version_p ("v", 0, 7)
       && cfun && cfun->machine->has_vector_ops_p)
@@ -6573,7 +6580,7 @@ riscv_mangle_type (const_tree type)
   if (TARGET_VECTOR && VECTOR_MODE_P (TYPE_MODE (type)))
     return riscv_mangle_builtin_type(type);
 
-  if (TARGET_MATRIX && riscv_matrix_mode (TYPE_MODE (type)))
+  if (TARGET_MATRIX && th_m_ext_mode_p (TYPE_MODE (type)))
     return riscv_mangle_builtin_type (type);
 
   /* Use the default mangling.  */
@@ -6676,7 +6683,7 @@ riscv_vector_mode_supported_p (machine_mode mode)
       || riscv_dsp_mode (mode))
     return true;
 
-  if (TARGET_MATRIX && riscv_matrix_mode (mode))
+  if (TARGET_MATRIX && th_m_ext_mode_p (mode))
     return true;
 
   return false;
@@ -6791,7 +6798,7 @@ riscv_frame_register_number (unsigned regno)
 poly_uint64
 riscv_regmode_natural_size (machine_mode mode)
 {
-  if(TARGET_MATRIX && riscv_matrix_mode (mode)
+  if(TARGET_MATRIX && th_m_ext_mode_p (mode)
       && !GET_MODE_SIZE (mode).is_constant ())
     return BYTES_PER_RVM_MATRIX;
 
@@ -6905,7 +6912,7 @@ riscv_verify_type_context (location_t loc, type_context_kind context,
   if (GET_MODE_SIZE (TYPE_MODE (type)).is_constant ())
     return true;
   
-  const char *base = riscv_matrix_mode (DECL_MODE (type)) ? "RVM" : "RVV";
+  const char *base = th_m_ext_mode_p (DECL_MODE (type)) ? "RVM" : "RVV";
 
   switch (context)
     {
@@ -7067,6 +7074,7 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
 
 #include "riscv-thead.c"
+#include "thead-matrix.c"
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override
