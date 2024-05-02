@@ -703,7 +703,7 @@
 			     [(match_operand:X 2 "register_operand" "r")
 			      (match_operand:X 3 "register_operand" "r")])
 			  (match_operand:GPR 4 "reg_or_0_operand" "rJ")
-			  (match_operand:GPR 5 "register_operand" "r")))]
+			  (match_operand:GPR 5 "reg_or_0_operand" "rJ")))]
   "TARGET_XTHEAD_CONDMV
    && !reload_completed"
   "#"
@@ -721,11 +721,11 @@
 	(if_then_else:GPR (eq (match_operand:X 1 "register_operand" " r, r")
 			      (const_int 0))
 			  (match_operand:GPR 2 "reg_or_0_operand"    "rJ, 0")
-			  (match_operand:GPR 3 "register_operand"    " 0, r")))]
+			  (match_operand:GPR 3 "reg_or_0_operand"    " 0, rJ")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mveqz\t%0, %z2, %1
-   mvnez\t%0, %3, %1"
+   mvnez\t%0, %z3, %1"
   [(set_attr "type" "arith")]
 )
 
@@ -734,11 +734,11 @@
 	    (if_then_else:GPR (ne (match_operand:X 1 "register_operand" " r, r")
 				  (const_int 0))
 			      (match_operand:GPR 2 "reg_or_0_operand"   "rJ, 0")
-			      (match_operand:GPR 3 "register_operand"   " 0, r")))]
+			      (match_operand:GPR 3 "reg_or_0_operand"   " 0, rJ")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mvnez\t%0, %z2, %1
-   mveqz\t%0, %3, %1"
+   mveqz\t%0, %z3, %1"
   [(set_attr "type" "arith")]
 )
 

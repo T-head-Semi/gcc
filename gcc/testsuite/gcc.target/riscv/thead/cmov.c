@@ -29,5 +29,29 @@ long func3 (long a, long b, long c, long d)
 
 /* { dg-final { scan-assembler "mvnez" } } */
 
+long g;
+
+long func4 (long a)
+{
+  long ret = g;
+  if (a)
+    ret = 0;
+
+  return ret;
+}
+
+/* { dg-final { scan-assembler "mvnez" } } */
+
+long func5 (long a)
+{
+  long ret = g;
+  if (!a)
+    ret = 0;
+
+  return ret;
+}
+
+/* { dg-final { scan-assembler "mveqz" } } */
+
 /* { dg-final { cleanup-saved-temps } } */
 
