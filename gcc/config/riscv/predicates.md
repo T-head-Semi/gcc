@@ -373,6 +373,22 @@
 	 || INTVAL (op) == 56;
 })
 
+(define_predicate "p_register_operand"
+  (match_operand 0 "register_operand")
+  {
+    if (((GET_MODE (op) != mode) && (mode != VOIDmode))
+	|| (!REG_P (op) && !SUBREG_P (op)))
+      return false;
+
+    unsigned regno = REG_P (op) ? REGNO (op) : REGNO (SUBREG_REG (op));
+    /* Special predicate to match even-odd double register pair.  */
+    if (!TARGET_64BIT && regno < FIRST_PSEUDO_REGISTER
+	&& mode == DImode && (regno & 1) != 0)
+      return false;
+
+   return true;
+  })
+
 ;; Predicates for the ZBS extension.
 (define_predicate "single_bit_mask_operand"
   (and (match_code "const_int")

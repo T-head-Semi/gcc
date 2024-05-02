@@ -755,6 +755,16 @@ typedef struct {
 #define CONSTANT_ADDRESS_P(X) \
   (CONSTANT_P (X) && memory_address_p (SImode, X))
 
+
+/* This definition replaces the formerly used 'm' constraint with a
+   different constraint letter in order to avoid changing semantics of
+   the 'm' constraint when accepting new address formats in
+   TARGET_LEGITIMATE_ADDRESS_P.  The constraint letter defined here
+   must not be used in insn definitions or inline assemblies except
+   for mov.  */
+#define TARGET_MEM_CONSTRAINT 'e'
+
+
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 

@@ -1283,8 +1283,8 @@
 ;; ====
 
 (define_insn "*movsf_hardfloat"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,f,m,Qmx,*f,*r,  *r,*r,*Qmx")
-	(match_operand:SF 1 "move_operand"         " f,Zf,G,m,f,G,*r,*f,*G*r,*Qmx,*r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,f,e,Qmx,*f,*r,  *r,*r,*Qmx")
+	(match_operand:SF 1 "move_operand"         " f,Zf,G,e,f,G,*r,*f,*G*r,*Qmx,*r"))]
   "!TARGET_64BIT
    && TARGET_XTHEAD_FLDR
    && (register_operand (operands[0], SFmode)
@@ -1294,8 +1294,8 @@
    (set_attr "mode" "SF")])
 
 (define_insn "*movdf_hardfloat_rv32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,f,m,Qmx,*Qrf,*Qrx,  *r,*r,*Qmx")
-	(match_operand:DF 1 "move_operand"         " f,Zf,G,m,f,G,*Qrx,*Qrf,*r*G,*Qmx,*r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,f,e,Qmx,*Qrf,*Qrx,  *r,*r,*Qmx")
+	(match_operand:DF 1 "move_operand"         " f,Zf,G,e,f,G,*Qrx,*Qrf,*r*G,*Qmx,*r"))]
   "!TARGET_64BIT && TARGET_DOUBLE_FLOAT
    && TARGET_XTHEAD_FLDR
    && (register_operand (operands[0], DFmode)

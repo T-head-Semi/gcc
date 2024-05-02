@@ -180,3 +180,13 @@
   "POLY_INT"
   (and (match_code "const_poly_int")
        (match_test "known_eq (rtx_to_poly_int64 (op), UNITS_PER_M_REG)")))
+
+
+; This defines 'm' as normal memory constraint.  This is only possible
+; since the standard memory constraint is re-defined in riscv.h using
+; the TARGET_MEM_CONSTRAINT macro.
+(define_memory_constraint "m"
+  "Matches the most general memory address."
+  (and (match_code "mem")
+       (match_test "memory_address_addr_space_p (GET_MODE (op), XEXP (op, 0), MEM_ADDR_SPACE (op))
+		    && !riscv_legitimize_address_index_p (XEXP (op, 0), GET_MODE (op), false)")))

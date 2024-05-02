@@ -111,7 +111,8 @@ riscv_classify_address_index (struct riscv_address_info *info, rtx x,
 
   if (SCALAR_FLOAT_MODE_P (mode))
     {
-      if (!TARGET_HARD_FLOAT)
+      if (!TARGET_HARD_FLOAT
+	  || (!TARGET_DOUBLE_FLOAT && mode == DFmode))
 	return false;
       if (!TARGET_XTHEAD_FLDR)
 	return false;

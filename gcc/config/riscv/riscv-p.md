@@ -204,10 +204,10 @@
 )
 
 (define_expand "<dsp_arith_op_name>di3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(dsp_fixp_add_sub_code:DI
-	  (match_operand:DI 1 "register_operand" "r")
-	  (match_operand:DI 2 "register_operand" "r")))]
+	  (match_operand:DI 1 "p_register_operand" "r")
+	  (match_operand:DI 2 "p_register_operand" "r")))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   ""
 )
@@ -288,10 +288,10 @@
 )
 
 (define_expand "umaddsidi4"
-  [(match_operand:DI 0 "register_operand")
+  [(match_operand:DI 0 "p_register_operand")
    (match_operand:SI 1 "register_operand")
    (match_operand:SI 2 "register_operand")
-   (match_operand:DI 3 "register_operand")]
+   (match_operand:DI 3 "p_register_operand")]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   {
     emit_insn (gen_riscv_umar64_si (operands[0], operands[3], operands[1],
@@ -301,10 +301,10 @@
 )
 
 (define_expand "msubsidi4"
-  [(match_operand:DI 0 "register_operand")
+  [(match_operand:DI 0 "p_register_operand")
    (match_operand:SI 1 "register_operand")
    (match_operand:SI 2 "register_operand")
-   (match_operand:DI 3 "register_operand")]
+   (match_operand:DI 3 "p_register_operand")]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   {
     emit_insn (gen_riscv_smsr64_si (operands[0], operands[3], operands[1],
@@ -314,10 +314,10 @@
 )
 
 (define_expand "umsubsidi4"
-  [(match_operand:DI 0 "register_operand")
+  [(match_operand:DI 0 "p_register_operand")
    (match_operand:SI 1 "register_operand")
    (match_operand:SI 2 "register_operand")
-   (match_operand:DI 3 "register_operand")]
+   (match_operand:DI 3 "p_register_operand")]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   {
     emit_insn (gen_riscv_umsr64_si (operands[0], operands[3], operands[1],
@@ -328,7 +328,7 @@
 
 (define_expand "vec_set<mode>"
   [(match_operand:DSP_V2E 0 "register_operand" "")
-   (match_operand:<DSP_EMODE> 1 "register_operand" "")
+   (match_operand:<DSP_EMODE> 1 "p_register_operand" "")
    (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_XTHEAD_ZPN"
   {
@@ -1999,7 +1999,7 @@
   [(set (match_operand:DSP_V2E 0 "register_operand" "=r")
 	(vec_merge:DSP_V2E
 	  (vec_duplicate:DSP_V2E
-	    (match_operand:<DSP_EMODE> 1 "register_operand" "r"))
+	    (match_operand:<DSP_EMODE> 1 "p_register_operand" "r"))
 	  (match_operand:DSP_V2E 2 "register_operand" "r")
 	  (match_operand:SI 3 "immediate_operand" "i")))]
   "TARGET_XTHEAD_ZPN"
@@ -4001,8 +4001,8 @@
 
 ;;Implement: smal
 (define_insn "riscv_smal_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
+	(plus:DI (match_operand:DI 1 "p_register_operand" "r")
 	  (mult:DI
 	    (sign_extend:DI
 	      (vec_select:HI
@@ -4017,8 +4017,8 @@
 )
 
 (define_insn "riscv_smal_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
+	(plus:DI (match_operand:DI 1 "p_register_operand" "r")
 	  (plus:DI
 	    (mult:DI
 	      (sign_extend:DI
@@ -4076,7 +4076,7 @@
 )
 
 (define_insn "riscv_pbsad_v8qi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI (plus:DI (plus:DI (plus:DI (plus:DI (plus:DI (plus:DI
 	  (abs:DI
 	    (minus:DI
@@ -4172,9 +4172,9 @@
 )
 
 (define_insn "riscv_pbsada_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI (plus:DI (plus:DI (plus:DI (plus:DI (plus:DI (plus:DI (plus:SI
-	  (match_operand:DI 1 "register_operand" "0")
+	  (match_operand:DI 1 "p_register_operand" "0")
 	  (abs:DI
 	    (minus:DI
 	      (sign_extend:DI
@@ -4434,22 +4434,22 @@
 
 ;;Implement: add64, sub64, kadd64, ksub64, ukadd64, uksub64
 (define_insn "riscv_<dsp_arith_intruction_name>64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(dsp_add_sub_code:DI
-	  (match_operand:DI 1 "register_operand" "r")
-	  (match_operand:DI 2 "register_operand" "r")))]
+	  (match_operand:DI 1 "p_register_operand" "r")
+	  (match_operand:DI 2 "p_register_operand" "r")))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   "<dsp_arith_intruction_name>64\\t%0,%1,%2"
 )
 
 ;;Implement: radd64, rsub64
 (define_insn "riscv_r<dsp_arith_intruction_name>64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(truncate:DI
 	  (ashiftrt:TI
 	    (dsp_integer_add_sub_code:TI
-	      (sign_extend:TI (match_operand:DI 1 "register_operand" "r"))
-	      (sign_extend:TI (match_operand:DI 2 "register_operand" "r")))
+	      (sign_extend:TI (match_operand:DI 1 "p_register_operand" "r"))
+	      (sign_extend:TI (match_operand:DI 2 "p_register_operand" "r")))
 	    (const_int 1))))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   "r<dsp_arith_intruction_name>64\\t%0,%1,%2"
@@ -4457,12 +4457,12 @@
 
 ;;Implement: uradd64, ursub64
 (define_insn "riscv_ur<dsp_arith_intruction_name>64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(truncate:DI
 	  (lshiftrt:TI
 	    (dsp_integer_add_sub_code:TI
-	      (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
-	      (zero_extend:TI (match_operand:DI 2 "register_operand" "r")))
+	      (zero_extend:TI (match_operand:DI 1 "p_register_operand" "r"))
+	      (zero_extend:TI (match_operand:DI 2 "p_register_operand" "r")))
 	    (const_int 1))))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   "ur<dsp_arith_intruction_name>64\\t%0,%1,%2"
@@ -4473,18 +4473,18 @@
 
 ;;Implement: smar64, umar64
 (define_insn "riscv_<su>mar64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (any_extend:DI (match_operand:SI 2 "register_operand" "r"))
 	    (any_extend:DI (match_operand:SI 3 "register_operand" "r")))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "<su>mar64\t%0,%2,%3"
 )
 
 (define_insn "riscv_<su>mar64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4501,15 +4501,15 @@
 		(vec_select:SI (match_dup 2) (parallel [(const_int 1)])))
 	      (any_extend:DI
 		(vec_select:SI (match_dup 3) (parallel [(const_int 1)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "<su>mar64\t%0,%2,%3"
 )
 
 ;;Implement: smsr64, umsr64
 (define_insn "riscv_<su>msr64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "register_operand" "0")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
+	(minus:DI (match_operand:DI 1 "p_register_operand" "0")
 	  (mult:DI
 	    (any_extend:DI (match_operand:SI 2 "register_operand" "r"))
 	    (any_extend:DI (match_operand:SI 3 "register_operand" "r")))))]
@@ -4518,10 +4518,10 @@
 )
 
 (define_insn "riscv_<su>msr64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (minus:DI
-	    (match_operand:DI 1 "register_operand" " 0")
+	    (match_operand:DI 1 "p_register_operand" " 0")
 	    (mult:DI
 	      (any_extend:DI
 		(vec_select:SI
@@ -4542,19 +4542,19 @@
 
 ;;Implement: kmar64
 (define_insn "riscv_kmar64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))
 	    (sign_extend:DI (match_operand:SI 3 "register_operand" "r")))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "kmar64\t%0,%2,%3"
 )
 
 (define_insn "riscv_kmar64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ss_plus:DI (match_operand:DI 1 "register_operand" " 0")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
+	(ss_plus:DI (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_plus:DI
 	    (mult:DI
 	      (sign_extend:DI
@@ -4576,9 +4576,9 @@
 
 ;;Implement: kmsr64
 (define_insn "riscv_kmsr64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_minus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (mult:DI
 	    (sign_extend:DI
 	      (match_operand:SI 2 "register_operand" "r"))
@@ -4589,10 +4589,10 @@
 )
 
 (define_insn "riscv_kmsr64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_minus:DI
 	  (ss_minus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	    (mult:DI
 	      (sign_extend:DI
 		(vec_select:SI
@@ -4613,21 +4613,21 @@
 
 ;;Implement: ukmar64
 (define_insn "riscv_ukmar64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(us_plus:DI
 	  (mult:DI
 	    (zero_extend:DI
 	      (match_operand:SI 2 "register_operand" "r"))
 	    (zero_extend:DI
 	      (match_operand:SI 3 "register_operand" "r")))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "ukmar64\t%0,%2,%3"
 )
 
 (define_insn "riscv_ukmar64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(us_plus:DI (match_operand:DI 1 "register_operand" " 0")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
+	(us_plus:DI (match_operand:DI 1 "p_register_operand" " 0")
 	  (us_plus:DI
 	    (mult:DI
 	      (zero_extend:DI
@@ -4649,9 +4649,9 @@
 
 ;;Implement: ukmsr64
 (define_insn "riscv_ukmsr64_si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(us_minus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (mult:DI
 	    (zero_extend:DI
 	      (match_operand:SI 2 "register_operand" "r"))
@@ -4662,10 +4662,10 @@
 )
 
 (define_insn "riscv_ukmsr64_v2si"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(us_minus:DI
 	  (us_minus:DI
-	    (match_operand:DI 1 "register_operand" " 0")
+	    (match_operand:DI 1 "p_register_operand" " 0")
 	    (mult:DI
 	      (zero_extend:DI
 		(vec_select:SI
@@ -4689,7 +4689,7 @@
 
 ;;Implement: smalbb
 (define_insn "riscv_smalbb_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -4700,24 +4700,24 @@
 	      (vec_select:HI
 		(match_operand:V2HI 3 "register_operand" "r")
 		(parallel [(const_int 0)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalbb\t%0,%2,%3"
 )
 
 (define_insn "*riscv_smalbb_hi"
-  [(set (match_operand:DI 0                     "register_operand" "=r")
+  [(set (match_operand:DI 0                     "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (sign_extend:DI (match_operand:HI 2 "register_operand" "r"))
 	    (sign_extend:DI (match_operand:HI 3 "register_operand" "r")))
-	  (match_operand:DI 1                   "register_operand" "0")))]
+	  (match_operand:DI 1                   "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalbb\t%0,%2,%3"
 )
 
 (define_insn "riscv_smalbb_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4738,14 +4738,14 @@
 		(vec_select:HI
 		  (match_dup 3)
 		  (parallel [(const_int 2)])))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalbb\t%0,%2,%3"
 )
 
 ;;Implement: smalbt
 (define_insn "riscv_smalbt_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -4756,13 +4756,13 @@
 	      (vec_select:HI
 		(match_operand:V2HI 3 "register_operand" "r")
 		(parallel [(const_int 1)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalbt\t%0,%2,%3"
 )
 
 (define_insn "*riscv_smaltb_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -4773,13 +4773,13 @@
 	      (vec_select:HI
 		(match_operand:V2HI 3 "register_operand" "r")
 		(parallel [(const_int 0)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalbt\t%0,%3,%2"
 )
 
 (define_insn "riscv_smalbt_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4800,13 +4800,13 @@
 		(vec_select:HI
 		  (match_dup 3)
 		  (parallel [(const_int 3)])))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalbt\t%0,%2,%3"
 )
 
 (define_insn "*riscv_smaltt_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4827,14 +4827,14 @@
 		(vec_select:HI
 		  (match_dup 3)
 		  (parallel [(const_int 2)])))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalbt\t%0,%2,%3"
 )
 
 ;;Implement: smaltt
 (define_insn "riscv_smaltt_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -4845,13 +4845,13 @@
 	      (vec_select:HI
 		(match_operand:V2HI 3 "register_operand" "r")
 		(parallel [(const_int 1)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smaltt\t%0,%2,%3"
 )
 
 (define_insn "riscv_smaltt_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4872,14 +4872,14 @@
 		(vec_select:HI
 		  (match_dup 3)
 		  (parallel [(const_int 3)])))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smaltt\t%0,%2,%3"
 )
 
 ;;Implement: smalda
 (define_insn "riscv_smalda_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4896,13 +4896,13 @@
 	      (sign_extend:DI
 		(vec_select:HI (match_dup 3)
 			       (parallel [(const_int 1)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalda\t%0,%2,%3"
 )
 
 (define_insn "riscv_smalda_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (plus:DI
@@ -4929,14 +4929,14 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 3)])))
 		(sign_extend:DI
 		  (vec_select:HI (match_dup 3) (parallel [(const_int 3)]))))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalda\t%0,%2,%3"
 )
 
 ;;Implement: smalxda
 (define_insn "riscv_smalxda_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (mult:DI
@@ -4953,13 +4953,13 @@
 	      (sign_extend:DI
 		(vec_select:HI (match_dup 3)
 			       (parallel [(const_int 0)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalxda\t%0,%2,%3"
 )
 
 (define_insn "riscv_smalxda_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (plus:DI
@@ -4986,14 +4986,14 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 3)])))
 		(sign_extend:DI
 		  (vec_select:HI (match_dup 3) (parallel [(const_int 2)]))))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalxda\t%0,%2,%3"
 )
 
 ;;Implement: smalds
 (define_insn "riscv_smalds_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (minus:DI
 	    (mult:DI
@@ -5010,13 +5010,13 @@
 	      (sign_extend:DI
 		(vec_select:HI (match_dup 3)
 			       (parallel [(const_int 0)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalds\t%0,%2,%3"
 )
 
 (define_insn "riscv_smalds_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (minus:DI
@@ -5043,14 +5043,14 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 2)])))
 		(sign_extend:DI
 		  (vec_select:HI (match_dup 3) (parallel [(const_int 2)]))))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalds\t%0,%2,%3"
 )
 
 ;;Implement: smaldrs
 (define_insn "riscv_smaldrs_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (minus:DI
 	    (mult:DI
@@ -5067,13 +5067,13 @@
 	      (sign_extend:DI
 		(vec_select:HI (match_dup 3)
 			       (parallel [(const_int 1)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smaldrs\t%0,%2,%3"
 )
 
 (define_insn "riscv_smaldrs_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (minus:DI
@@ -5100,14 +5100,14 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 3)])))
 		(sign_extend:DI
 		  (vec_select:HI (match_dup 3) (parallel [(const_int 3)]))))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smaldrs\t%0,%2,%3"
 )
 
 ;;Implement: smalxds
 (define_insn "riscv_smalxds_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (minus:DI
 	    (mult:DI
@@ -5124,13 +5124,13 @@
 	      (sign_extend:DI
 		(vec_select:HI (match_dup 3)
 			       (parallel [(const_int 1)])))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT"
   "smalxds\t%0,%2,%3"
 )
 
 (define_insn "riscv_smalxds_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(plus:DI
 	  (plus:DI
 	    (minus:DI
@@ -5157,17 +5157,17 @@
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 2)])))
 		(sign_extend:DI
 		  (vec_select:HI (match_dup 3) (parallel [(const_int 3)]))))))
-	  (match_operand:DI 1 "register_operand" " 0")))]
+	  (match_operand:DI 1 "p_register_operand" " 0")))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "smalxds\t%0,%2,%3"
 )
 
 ;;Implement: smslda
 (define_insn "riscv_smslda_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (minus:DI
-	    (match_operand:DI 1 "register_operand" " 0")
+	    (match_operand:DI 1 "p_register_operand" " 0")
 	    (mult:DI
 	      (sign_extend:DI
 		(vec_select:HI (match_operand:V2HI 2 "register_operand" "r")
@@ -5185,12 +5185,12 @@
 )
 
 (define_insn "riscv_smslda_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (minus:DI
 	    (minus:DI
 	      (minus:DI
-		(match_operand:DI 1 "register_operand" " 0")
+		(match_operand:DI 1 "p_register_operand" " 0")
 		(mult:DI
 		  (sign_extend:DI
 		    (vec_select:HI
@@ -5221,10 +5221,10 @@
 
 ;;Implement: smslxda
 (define_insn "riscv_smslxda_v2hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (minus:DI
-	    (match_operand:DI 1 "register_operand" " 0")
+	    (match_operand:DI 1 "p_register_operand" " 0")
 	    (mult:DI
 	      (sign_extend:DI
 		(vec_select:HI (match_operand:V2HI 2 "register_operand" "r")
@@ -5242,12 +5242,12 @@
 )
 
 (define_insn "riscv_smslxda_v4hi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (minus:DI
 	    (minus:DI
 	      (minus:DI
-		(match_operand:DI 1 "register_operand" " 0")
+		(match_operand:DI 1 "p_register_operand" " 0")
 		(mult:DI
 		  (sign_extend:DI
 		    (vec_select:HI
@@ -5493,7 +5493,7 @@
 )
 
 (define_insn "riscv_<dsp_arith_intruction_name>w_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (dsp_fixp_add_sub_code:SI
 	    (match_operand:SI 1 "register_operand" "r")
@@ -5530,7 +5530,7 @@
 )
 
 (define_insn "*riscv_kdmbb_scalardi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_mult:SI
 	    (mult:SI
@@ -5542,7 +5542,7 @@
 )
 
 (define_insn "*riscv_kdmbb_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_mult:SI
 	    (mult:SI
@@ -5574,7 +5574,7 @@
 )
 
 (define_insn "*riscv_kdmbt_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_mult:SI
 	    (mult:SI
@@ -5606,7 +5606,7 @@
 )
 
 (define_insn "*riscv_kdmtt_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_mult:SI
 	    (mult:SI
@@ -5649,7 +5649,7 @@
 )
 
 (define_insn "riscv_kslraw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (if_then_else:SI
 	    (lt:SI (match_operand:SI 2 "register_operand" "r")
@@ -5690,7 +5690,7 @@
 )
 
 (define_insn "riscv_kslraw_u_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (if_then_else:SI
 	    (lt:SI (match_operand:SI 2 "register_operand" "r")
@@ -5722,7 +5722,7 @@
 )
 
 (define_insn "riscv_ksllw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r,r")
 	(sign_extend:DI (ss_ashift:SI
 	    (match_operand:SI 1 "register_operand" "r,r")
 	    (match_operand:SI 2 "const_int_or_reg_operand" "i,r"))))]
@@ -5770,7 +5770,7 @@
 )
 
 (define_insn "*riscv_kdmabb_scalardi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_plus:SI
 	    (ss_mult:SI
@@ -5784,7 +5784,7 @@
 )
 
 (define_insn "*riscv_kdmabb_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_plus:SI
 	    (ss_mult:SI
@@ -5820,7 +5820,7 @@
 )
 
 (define_insn "*riscv_kdmabt_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_plus:SI
 	    (ss_mult:SI
@@ -5856,7 +5856,7 @@
 )
 
 (define_insn "*riscv_kdmatt_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_plus:SI
 	    (ss_mult:SI
@@ -5883,7 +5883,7 @@
 )
 
 (define_insn "*riscv_kabsw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (ss_abs:SI
 	    (match_operand:SI 1 "register_operand" "r"))))]
@@ -5908,7 +5908,7 @@
 )
 
 (define_insn "riscv_raddw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ashiftrt:DI
 	  (plus:DI
 	    (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
@@ -5919,7 +5919,7 @@
 )
 
 (define_insn "*riscv_raddw_di2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend: DI
 	  (truncate:SI
 	    (ashiftrt:DI
@@ -5945,7 +5945,7 @@
 )
 
 (define_insn "riscv_rsubw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ashiftrt:DI
 	  (minus:DI
 	    (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
@@ -5956,7 +5956,7 @@
 )
 
 (define_insn "*riscv_rsubw_di2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (truncate:SI
 	    (ashiftrt:DI
@@ -5982,7 +5982,7 @@
 )
 
 (define_insn "riscv_uraddw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(lshiftrt:DI
 	  (plus:DI
 	    (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
@@ -5993,7 +5993,7 @@
 )
 
 (define_insn "*riscv_uraddw_di2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend: DI
 	  (truncate:SI
 	    (lshiftrt:DI
@@ -6019,7 +6019,7 @@
 )
 
 (define_insn "riscv_ursubw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ashiftrt:DI
 	  (minus:DI
 	    (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
@@ -6030,7 +6030,7 @@
 )
 
 (define_insn "*riscv_ursubw_di2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (truncate:SI
 	    (ashiftrt:DI
@@ -6060,7 +6060,7 @@
 )
 
 (define_insn "riscv_maxw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (smax:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "register_operand" "r"))))]
@@ -6086,7 +6086,7 @@
 )
 
 (define_insn "riscv_minw_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (smin:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "register_operand" "r"))))]
@@ -6096,7 +6096,7 @@
 
 ;;Implement: mulr64
 (define_insn "riscv_mulr64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 	  (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
@@ -6106,7 +6106,7 @@
 
 ;;Implement: mulsr64
 (define_insn "riscv_mulsr64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 	  (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
@@ -6125,7 +6125,7 @@
 )
 
 (define_insn "riscv_maddr32_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (plus:SI
 	    (mult:SI (match_operand:SI 2 "register_operand" "r")
@@ -6146,7 +6146,7 @@
 )
 
 (define_insn "riscv_msubr32_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (minus:SI (match_operand:SI 1 "register_operand" "0")
 		    (mult:SI (match_operand:SI 2 "register_operand" "r")
@@ -6249,26 +6249,26 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	  (any_shiftrt:DI
-	    (match_operand:DI 1 "register_operand" "r")
+	    (match_operand:DI 1 "p_register_operand" "r")
 	    (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   "wext\t%0,%1,%2"
 )
 
 (define_insn "riscv_wext_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (truncate:SI
 	    (ashiftrt:DI
-	      (match_operand:DI 1 "register_operand" "r")
+	      (match_operand:DI 1 "p_register_operand" "r")
 	      (match_operand:SI 2 "register_operand" "r")))))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   "wext\t%0,%1,%2"
 )
 
 (define_insn_and_split "*wext_<code>di3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(any_shift:DI (match_operand:DI 1 "register_operand" "")
+  [(set (match_operand:DI 0 "p_register_operand" "")
+	(any_shift:DI (match_operand:DI 1 "p_register_operand" "")
 		      (match_operand:QI 2 "imm6u_operand" "")))]
   "TARGET_XTHEAD_ZPSFOPERAND && !TARGET_64BIT && !reload_completed"
   "#"
@@ -6285,7 +6285,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	  (any_shiftrt:DI
-	    (match_operand:DI 1 "register_operand" "r")
+	    (match_operand:DI 1 "p_register_operand" "r")
 	    (match_operand:SI 2 "immediate_operand" "i"))))]
   "TARGET_XTHEAD_ZPSFOPERAND"
   {
@@ -6295,11 +6295,11 @@
 )
 
 (define_insn "riscv_wexti_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (truncate:SI
 	    (ashiftrt:DI
-	      (match_operand:DI 1 "register_operand" "r")
+	      (match_operand:DI 1 "p_register_operand" "r")
 	      (match_operand:SI 2 "immediate_operand" "i")))))]
   "TARGET_XTHEAD_ZPSFOPERAND && TARGET_64BIT"
   {
@@ -6310,7 +6310,7 @@
 
 (define_insn "*riscv_wexti_<mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=r, r")
-	(sign_extract:GPR (match_operand:DI 1 "register_operand" "r, r")
+	(sign_extract:GPR (match_operand:DI 1 "p_register_operand" "r, r")
 			  (const_int 32)
 			  (match_operand 2 "reg_or_uimm5_operand" "r, i")))]
   "TARGET_XTHEAD_ZPSFOPERAND"
@@ -6846,7 +6846,7 @@
 
 ;;Implemented: smbb32, smbt32, smtt32
 (define_insn "riscv_smbb32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (sign_extend:DI
 	     (vec_select:SI
@@ -6860,7 +6860,7 @@
 )
 
 (define_insn "riscv_smbt32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (sign_extend:DI
 	     (vec_select:SI
@@ -6874,7 +6874,7 @@
 )
 
 (define_insn "*riscv_smtb32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (sign_extend:DI
 	     (vec_select:SI
@@ -6888,7 +6888,7 @@
 )
 
 (define_insn "riscv_smtt32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(mult:DI
 	  (sign_extend:DI
 	     (vec_select:SI
@@ -6906,7 +6906,7 @@
 
 ;;Implemented: kmabb32
 (define_insn "riscv_kmabb32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -6917,14 +6917,14 @@
 	      (vec_select:SI
 		(match_operand:V2SI 3 "register_operand" "r")
 		(parallel [(const_int 0)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPRVSFEXTRA"
   "kmabb32\t%0,%2,%3"
 )
 
 ;;Implemented: kmabt32
 (define_insn "riscv_kmabt32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -6935,13 +6935,13 @@
 	      (vec_select:SI
 		(match_operand:V2SI 3 "register_operand" "r")
 		(parallel [(const_int 1)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPRVSFEXTRA"
   "kmabt32\t%0,%2,%3"
 )
 
 (define_insn "*riscv_kmatb32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -6952,14 +6952,14 @@
 	      (vec_select:SI
 		(match_operand:V2SI 3 "register_operand" "r")
 		(parallel [(const_int 0)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPRVSFEXTRA"
   "kmabt32\t%0,%2,%3"
 )
 
 ;;Implemented: kmatt32
 (define_insn "riscv_kmatt32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI
@@ -6970,7 +6970,7 @@
 	      (vec_select:SI
 		(match_operand:V2SI 3 "register_operand" "r")
 		(parallel [(const_int 1)]))))
-	  (match_operand:DI 1 "register_operand" "0")))]
+	  (match_operand:DI 1 "p_register_operand" "0")))]
   "TARGET_XTHEAD_ZPRVSFEXTRA"
   "kmatt32\t%0,%2,%3"
 )
@@ -6980,7 +6980,7 @@
 
 ;;Impement: kmda32
 (define_insn "riscv_kmda32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI (vec_select:SI
@@ -7002,7 +7002,7 @@
 
 ;;Impement: kmxda32
 (define_insn "riscv_kmxda32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
 	  (mult:DI
 	    (sign_extend:DI (vec_select:SI
@@ -7024,9 +7024,9 @@
 
 ;;Impement: kmada32
 (define_insn "riscv_kmada32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
-	  (match_operand:DI 1 "register_operand" "0")
+	  (match_operand:DI 1 "p_register_operand" "0")
 	  (ss_plus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7048,9 +7048,9 @@
 
 ;;Impement: kmaxda32
 (define_insn "riscv_kmaxda32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_plus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7072,9 +7072,9 @@
 
 ;;Impement: kmads32
 (define_insn "riscv_kmads32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_minus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7096,9 +7096,9 @@
 
 ;;Impement: kmadrs32
 (define_insn "riscv_kmadrs32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_minus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7120,9 +7120,9 @@
 
 ;;Impement: kmaxds32
 (define_insn "riscv_kmaxds32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_plus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_minus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7144,9 +7144,9 @@
 
 ;;Impement: kmsda32
 (define_insn "riscv_kmsda32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_minus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_minus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7168,9 +7168,9 @@
 
 ;;Impement: kmsxda32
 (define_insn "riscv_kmsxda32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(ss_minus:DI
-	  (match_operand:DI 1 "register_operand" " 0")
+	  (match_operand:DI 1 "p_register_operand" " 0")
 	  (ss_minus:DI
 	    (mult:DI
 	      (sign_extend:DI (vec_select:SI
@@ -7192,7 +7192,7 @@
 
 ;;Impement: smds32
 (define_insn "riscv_smds32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (mult:DI
 	    (sign_extend:DI (vec_select:SI
@@ -7214,7 +7214,7 @@
 
 ;;Impement: smdrs32
 (define_insn "riscv_smdrs32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (mult:DI
 	    (sign_extend:DI (vec_select:SI
@@ -7236,7 +7236,7 @@
 
 ;;Impement: smxds32
 (define_insn "riscv_smxds32"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(minus:DI
 	  (mult:DI
 	    (sign_extend:DI (vec_select:SI
@@ -7274,7 +7274,7 @@
 )
 
 (define_insn "riscv_sraw_u_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "p_register_operand" "=r")
 	(sign_extend:DI
 	  (unspec:SI
 	    [(match_operand:SI 1 "register_operand" "r")
