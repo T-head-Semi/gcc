@@ -51,7 +51,7 @@ long func5 (long a)
   return ret;
 }
 
-/* { dg-final { scan-assembler "mveqz" } } */
+/* { dg-final { scan-assembler "mvnez" } } */
 
 /* { dg-final { cleanup-saved-temps } } */
 

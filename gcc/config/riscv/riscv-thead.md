@@ -717,27 +717,29 @@
 )
 
 (define_insn "*xthead_cmovz<GPR:mode>"
-  [(set (match_operand:GPR 0 "register_operand"                     "=r, r")
-	(if_then_else:GPR (eq (match_operand:X 1 "register_operand" " r, r")
+  [(set (match_operand:GPR 0 "register_operand"                     "=r, r, r")
+	(if_then_else:GPR (eq (match_operand:X 1 "register_operand" " r, r, 0")
 			      (const_int 0))
-			  (match_operand:GPR 2 "reg_or_0_operand"    "rJ, 0")
-			  (match_operand:GPR 3 "reg_or_0_operand"    " 0, rJ")))]
+			  (match_operand:GPR 2 "reg_or_0_operand"    "rJ,0, J")
+			  (match_operand:GPR 3 "reg_or_0_operand"    " 0,rJ,r")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mveqz\t%0, %z2, %1
-   mvnez\t%0, %z3, %1"
+   mvnez\t%0, %z3, %1
+   mvnez\t%0, %3, %0"
   [(set_attr "type" "arith")]
 )
 
 (define_insn "*xthead_cmovn<GPR:mode>"
-  [(set (match_operand:GPR 0 "register_operand"                         "=r, r")
-	    (if_then_else:GPR (ne (match_operand:X 1 "register_operand" " r, r")
+  [(set (match_operand:GPR 0 "register_operand"                         "=r, r, r")
+	    (if_then_else:GPR (ne (match_operand:X 1 "register_operand" " r, 0, r")
 				  (const_int 0))
-			      (match_operand:GPR 2 "reg_or_0_operand"   "rJ, 0")
-			      (match_operand:GPR 3 "reg_or_0_operand"   " 0, rJ")))]
+			      (match_operand:GPR 2 "reg_or_0_operand"   "rJ, r, 0")
+			      (match_operand:GPR 3 "reg_or_0_operand"   " 0, J, rJ")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mvnez\t%0, %z2, %1
+   mvnez\t%0, %2, %0
    mveqz\t%0, %z3, %1"
   [(set_attr "type" "arith")]
 )
