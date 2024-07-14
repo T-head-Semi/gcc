@@ -2694,7 +2694,7 @@ static GTY(()) int riscv_builtin_decl_index[NUM_INSN_CODES];
 #define GET_BUILTIN_DECL(CODE) \
   riscv_builtin_decls[riscv_builtin_decl_index[(CODE)]]
 
-#include "riscv-builtins-thead.c"
+#include "riscv-builtins-xuantie.c"
 
 /* Type node for fp16.  */
 tree fp16_type_node;
