@@ -196,7 +196,7 @@ struct riscv_tune_param
   unsigned short memory_cost;
   bool slow_unaligned_access;
 
-  // thead extension
+  // XuanTie extension
   const char *function_align = NULL;
   const char *jump_align = NULL;
   const char *loop_align = NULL;
@@ -351,12 +351,12 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "sifive-3-series", generic, &rocket_tune_info },
   { "sifive-5-series", generic, &rocket_tune_info },
   { "sifive-7-series", sifive_7, &sifive_7_tune_info },
-  { "e902", generic, &thead_e9_tune_info },
-  { "e906", generic, &thead_e9_tune_info },
-  { "e907", generic, &thead_e9_tune_info },
-  { "c906v", c906v, &thead_c906v_tune_info },
-  { "c910", c910, &thead_c910_tune_info },
-  { "c908", c908, &thead_c908_tune_info },
+  { "e902", generic, &xt_e9_tune_info },
+  { "e906", generic, &xt_e9_tune_info },
+  { "e907", generic, &xt_e9_tune_info },
+  { "c906v", c906v, &xt_c906v_tune_info },
+  { "c910", c910, &xt_c910_tune_info },
+  { "c908", c908, &xt_c908_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
 
@@ -7066,7 +7066,7 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
 
-#include "riscv-thead.c"
+#include "riscv-xuantie.c"
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override

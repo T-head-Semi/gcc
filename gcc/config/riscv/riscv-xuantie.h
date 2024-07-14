@@ -92,10 +92,10 @@
 #define TARGET_VECTOR_FIXED (TARGET_VECTOR && riscv_rvv_chunks.is_constant ())
 
 #ifdef IN_TARGET_CODE
-extern const struct riscv_tune_param thead_c908_tune_info;
-extern const struct riscv_tune_param thead_c906v_tune_info;
-extern const struct riscv_tune_param thead_c910_tune_info;
-extern const struct riscv_tune_param thead_e9_tune_info;
+extern const struct riscv_tune_param xt_c908_tune_info;
+extern const struct riscv_tune_param xt_c906v_tune_info;
+extern const struct riscv_tune_param xt_c910_tune_info;
+extern const struct riscv_tune_param xt_e9_tune_info;
 
 void
 riscv_xthead_option_override (const struct riscv_tune_param *tune_param,

@@ -192,7 +192,7 @@ Mask(ZVFBFWMA)
 
 Mask(RVZFA)
 
-; T-Head mask
+; XuanTie mask
 
 Mask(XTHEAD)
 
@@ -206,7 +206,7 @@ Mask(XTHEAD_V)
 
 Mask(MATRIX)
 
-; T-Head extension
+; XuanTie extension
 
 mldr
 Target Report Var(riscv_insn_ldr) Init(1) Undocumented
@@ -368,7 +368,7 @@ mriscv_fli_value_by_int
 Target Var(riscv_fli_value_by_int) Init(0) Undocumented
 The fli instruction in the zfa extension uses integers to represent floating-point values.
 
-; T-Head compatibility
+; XuanTie compatibility
 
 m4k-opts
 Target Report Var(riscv_4k_optimize) Init(0)
