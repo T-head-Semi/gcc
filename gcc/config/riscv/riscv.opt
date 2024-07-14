@@ -184,7 +184,7 @@ Mask(VECTOR)
 
 Mask(RVZFH)
 
-; T-Head mask
+; XuanTie mask
 
 Mask(XTHEAD)
 
@@ -198,7 +198,7 @@ Mask(XTHEAD_V)
 
 Mask(MATRIX)
 
-; T-Head extension
+; XuanTie extension
 
 mldr
 Target Report Var(riscv_insn_ldr) Init(1) Undocumented
@@ -356,7 +356,7 @@ mcombine-cse
 Target Var(riscv_combine_cse) Init(1) Undocumented
 Do CSE optimization when the result of combine are two SET insns.
 
-; T-Head compatibility
+; XuanTie compatibility
 
 m4k-opts
 Target Report Var(riscv_4k_optimize) Init(0)

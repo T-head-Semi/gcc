@@ -1,7 +1,7 @@
 /* RISC-V Martix extension instructions include file.
 
    Copyright (C) 2023 Free Software Foundation, Inc.
-   Contributed by T-HEAD.
+   Contributed by Alibaba Damo Academy Xuantie Team.
 
    This file is part of GCC.
 

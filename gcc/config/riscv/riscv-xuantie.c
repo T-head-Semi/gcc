@@ -1,7 +1,7 @@
 
 #define INCLUDE_STRING
 #include "opts.h"
-#include "riscv-thead-tune.h"
+#include "riscv-xuantie-tune.h"
 #include "insn-attr.h"
 #include "riscv-subset.h"
 #include "sched-int.h"
@@ -1168,10 +1168,10 @@ riscv_optimize_quiet_comparison ()
 }
 
 
-#include "riscv-thead-dsext.c"
-#include "riscv-thead-dvsetvl.c"
-#include "riscv-thead-dvsetvl-v0p7.c"
-#include "riscv-thead-dread-vlenb.c"
+#include "riscv-xuantie-dsext.c"
+#include "riscv-xuantie-dvsetvl.c"
+#include "riscv-xuantie-dvsetvl-v0p7.c"
+#include "riscv-xuantie-dread-vlenb.c"
 
 #undef TARGET_IV_GEN_LOAD_INDEX
 #define TARGET_IV_GEN_LOAD_INDEX riscv_iv_gen_load_index

@@ -4242,7 +4242,7 @@ latex_elements = {
 
     'preamble': r'''
 \usepackage{draftwatermark}
-\SetWatermarkText{T-HEAD}
+\SetWatermarkText{XuanTie}
 ''',
 }
 
@@ -4315,7 +4315,7 @@ This article will show the defined intrinsic interfaces for reference and use.
 -----------------
 
 The Intrinsic functions in this article is based on *P-ext-propasl (version 0.9)* and should be used
-with the riscv complier built by **THEAD** which internal version is V1.10.3 or V2.0.0.
+with the riscv complier built by **XuanTie** which internal version is V1.10.3 or V2.0.0.
 '''
 
     type_doc_def = '''

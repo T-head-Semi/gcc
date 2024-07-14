@@ -3052,7 +3052,7 @@
   DONE;
 })
 
-(include "riscv-thead-stdext.md")
+(include "riscv-xuantie-stdext.md")
 (include "sync.md")
 (include "peephole.md")
 (include "pic.md")

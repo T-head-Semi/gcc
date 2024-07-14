@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config/riscv/riscv-opts.h"
 
-#include "config/riscv/riscv-thead.h"
+#include "config/riscv/riscv-xuantie.h"
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)

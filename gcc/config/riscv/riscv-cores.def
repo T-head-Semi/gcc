@@ -46,7 +46,7 @@ RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
 
-// THEAD E Series
+// XuanTie E Series
 RISCV_CORE ("e902",           "rv32ecxtheadse",                                      "e902")
 RISCV_CORE ("e902m",          "rv32emcxtheadse",                                     "e902")
 RISCV_CORE ("e902t",          "rv32ecxtheadse",                                      "e902")
@@ -66,7 +66,7 @@ RISCV_CORE ("e907p",          "rv32imacpzpsfoperand_xtheade",                   
 RISCV_CORE ("e907fp",         "rv32imafcpzpsfoperand_xtheade",                       "e907")
 RISCV_CORE ("e907fdp",        "rv32imafdcpzpsfoperand_xtheade",                      "e907")
 
-// THEAD C Series
+// XuanTie C Series
 RISCV_CORE ("c906",           "rv64imacxtheadc",                                     "c906v")
 RISCV_CORE ("c906fd",         "rv64imafdcxtheadc",                                   "c906v")
 RISCV_CORE ("c906fdv",        "rv64imafdcv0p7_zfh_xtheadc",                          "c906v")
@@ -82,7 +82,7 @@ RISCV_CORE ("c908v-rv64",     "rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_xthea
 RISCV_CORE ("c908-rv32",      "rv32imafdc_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc",  "c908")
 RISCV_CORE ("c908v-rv32",     "rv32imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc_xtheadvdot", "c908")
 
-// THEAD R Series
+// XuanTie R Series
 RISCV_CORE ("r910",           "rv64imafdcxtheadc",                                   "c910")
 RISCV_CORE ("r920",           "rv64imafdcv0p7_zfh_xtheadc",                          "c910")
 #undef RISCV_CORE
