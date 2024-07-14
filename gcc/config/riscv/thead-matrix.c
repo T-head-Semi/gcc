@@ -2,7 +2,8 @@
 /* MCFG pass for Thead Matrix Extension for GNU compiler.
 
    Copyright (C) 2022-2024 Free Software Foundation, Inc.
-   Contributed by Jin Ma <jinma@linux.alibaba.com>, T-head-Semi.
+   Contributed by Jin Ma <jinma@linux.alibaba.com>,
+   Alibaba Damo Academy Xuantie Team.
 
    This file is part of GCC.
 

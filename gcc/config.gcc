@@ -2461,7 +2461,7 @@ microblaze*-*-elf)
 	tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
 riscv*-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h riscv/riscv-thead.h"
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h riscv/riscv-xuantie.h"
 	case "x${enable_multilib}" in
 	xno) ;;
 	xyes)
@@ -2487,7 +2487,7 @@ riscv*-*-linux*)
 	gcc_cv_initfini_array=yes
 	;;
 riscv*-*-elf* | riscv*-*-rtems*)
-	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h riscv/riscv-thead.h"
+	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h riscv/riscv-xuantie.h"
 	case ${target} in
 	*-*-rtems*)
 	  tm_file="${tm_file} rtems.h riscv/rtems.h"
@@ -2501,7 +2501,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 		  *) echo "Unknown value for enable_multilib"; exit 1
 		  esac
 	  fi
-	  extra_options="${extra_options} riscv/thead-elf.opt"
+	  extra_options="${extra_options} riscv/xuantie-elf.opt"
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv"
 	gnu_ld=yes
@@ -2511,7 +2511,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	gcc_cv_initfini_array=yes
 	;;
 riscv*-*-freebsd*)
-	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h riscv/riscv-thead.h"
+	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h riscv/riscv-xuantie.h"
 	tmake_file="${tmake_file} riscv/t-riscv"
 	gnu_ld=yes
 	gas=yes

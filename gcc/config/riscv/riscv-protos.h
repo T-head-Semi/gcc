@@ -121,7 +121,7 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 
-/* T-Head */
+/* XuanTie */
 rtl_opt_pass * make_pass_mcfg (gcc::context *ctxt);
 #define RVM_X0_REG gen_rtx_REG (SImode, X0_REGNUM)
 

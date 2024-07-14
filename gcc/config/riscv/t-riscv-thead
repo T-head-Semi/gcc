@@ -1,2 +1,0 @@
-
-PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes-thead.def
