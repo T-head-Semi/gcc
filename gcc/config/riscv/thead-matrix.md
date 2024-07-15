@@ -20,7 +20,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(d  e_c_enum "unspec" [
+(define_c_enum "unspec" [
   UNSPEC_SET_MSIZE
   UNSPEC_USE_MSIZE
   UNSPEC_MUNDEF
