@@ -75,21 +75,37 @@ RISCV_CORE ("c910",           "rv64imafdc_zfh_xtheadc",                         
 RISCV_CORE ("c920",           "rv64imafdcv0p7_zfh_xtheadc",                          "c910")
 
 // 64 bits by default for C908.
-RISCV_CORE ("c908",           "rv64imafdc_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc",  "c908")
-RISCV_CORE ("c908v",          "rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc_xtheadvdot", "c908")
-RISCV_CORE ("c908-rv64",      "rv64imafdc_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc",  "c908")
-RISCV_CORE ("c908v-rv64",     "rv64imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc_xtheadvdot", "c908")
-RISCV_CORE ("c908-rv32",      "rv32imafdc_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc",  "c908")
-RISCV_CORE ("c908v-rv32",     "rv32imafdcv_zihintpause_zfh_zba_zbb_zbc_zbs_xtheadc_xtheadvdot", "c908")
+RISCV_CORE ("c908",           "rv64imafdc_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c908")
+RISCV_CORE ("c908v",          "rv64imafdcv_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc_xtheadvdot", "c908")
+RISCV_CORE ("c908-rv64",      "rv64imafdc_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c908")
+RISCV_CORE ("c908v-rv64",     "rv64imafdcv_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc_xtheadvdot", "c908")
+RISCV_CORE ("c908-rv32",      "rv32imafdc_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c908")
+RISCV_CORE ("c908v-rv32",     "rv32imafdcv_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc_xtheadvdot", "c908")
 
 // 64 bits and no FPRs by default for C908.
-RISCV_CORE ("c908i",           "rv64imac_zihintpause_zba_zbb_zbc_zbs_xtheadc",  "c908")
+RISCV_CORE ("c908i",           "rv64imac_zicbom_zicbop_zicboz_zihintpause_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c908")
+
+// 64 bits by default for C907.
+RISCV_CORE ("c907",           "rv64imac_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fd",           "rv64imafdc_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fdv",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadvdot",  "c907")
+RISCV_CORE ("c907fdvm",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadmatrix_xtheadvdot",  "c907")
+RISCV_CORE ("c907-rv64",           "rv64imac_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fd-rv64",           "rv64imafdc_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fdv-rv64",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadvdot",  "c907")
+RISCV_CORE ("c907fdvm-rv64",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadmatrix_xtheadvdot",  "c907")
+RISCV_CORE ("c907-rv32",           "rv32imac_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fd-rv32",           "rv32imafdc_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c907")
+RISCV_CORE ("c907fdv-rv32",           "rv32imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadvdot",  "c907")
+RISCV_CORE ("c907fdvm-rv32",           "rv32imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zcb_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadmatrix_xtheadvdot",  "c907")
 
 // 64 bits by default for C910V2 and C920V2.
-RISCV_CORE ("c910v2",           "rv64imafdc_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_svinval_svpbmt_xtheadc",  "c910")
-RISCV_CORE ("c920v2",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svpbmt_xtheadc_xtheadvdot",  "c910")
+RISCV_CORE ("c910v2",           "rv64imafdc_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc",  "c910")
+RISCV_CORE ("c920v2",           "rv64imafdcv_zicbom_zicbop_zicboz_zicond_zihintntl_zihintpause_zawrs_zfa_zfbfmin_zfh_zca_zcb_zcd_zba_zbb_zbc_zbs_zvfbfmin_zvfbfwma_svinval_svnapot_svpbmt_xtheadc_xtheadvdot",  "c910")
 
 // XuanTie R Series
 RISCV_CORE ("r910",           "rv64imafdc_zfh_xtheadc",                                   "c910")
 RISCV_CORE ("r920",           "rv64imafdcv0p7_zfh_xtheadc",                          "c910")
+
+RISCV_CORE ("c920v2.c908v",          "rv64imafdcv_zicbom_zicbop_zicboz_zihintpause_zfh_zba_zbb_zbc_zbs_svinval_svnapot_svpbmt_xtheadc_xtheadvdot", "c920v2.c908v")
 #undef RISCV_CORE

@@ -170,34 +170,42 @@ RVV_MASK_MODES(32)
 RVV_MASK_MODES(64)
 RVV_MASK_MODES(128)
 
-#define RVM_MODES(VB, VH, VS, VD) \
-  VECTOR_MODES_WITH_PREFIX (M, INT, 64, 0); \
-  VECTOR_MODES_WITH_PREFIX (M, FLOAT, 64, 0); \
-  VECTOR_MODES_WITH_PREFIX (M2x, FLOAT, 64, 0); \
-  \
-  ADJUST_NUNITS (M##VB##QI, riscv_rvm_chunks * 8); \
-  ADJUST_NUNITS (M##VH##HI, riscv_rvm_chunks * 4); \
-  ADJUST_NUNITS (M##VS##SI, riscv_rvm_chunks * 2); \
-  ADJUST_NUNITS (M##VD##DI, riscv_rvm_chunks * 1); \
-  ADJUST_NUNITS (M##VH##HF, riscv_rvm_chunks * 4); \
-  ADJUST_NUNITS (M##VS##SF, riscv_rvm_chunks * 2); \
-  ADJUST_NUNITS (M##VD##DF, riscv_rvm_chunks * 1); \
-  ADJUST_NUNITS (M2x##VH##HF, riscv_rvm_chunks * 4 * 2); \
-  ADJUST_NUNITS (M2x##VS##SF, riscv_rvm_chunks * 2 * 2); \
-  ADJUST_NUNITS (M2x##VD##DF, riscv_rvm_chunks * 1 * 2); \
-  \
-  ADJUST_ALIGNMENT (M##VB##QI, 1); \
-  ADJUST_ALIGNMENT (M##VH##HI, 2); \
-  ADJUST_ALIGNMENT (M##VS##SI, 4); \
-  ADJUST_ALIGNMENT (M##VD##DI, 8); \
-  ADJUST_ALIGNMENT (M##VH##HF, 2); \
-  ADJUST_ALIGNMENT (M##VS##SF, 4); \
-  ADJUST_ALIGNMENT (M##VD##DF, 8); \
-  ADJUST_ALIGNMENT (M2x##VH##HF, 2); \
-  ADJUST_ALIGNMENT (M2x##VS##SF, 4); \
-  ADJUST_ALIGNMENT (M2x##VD##DF, 8);
+#define RVM_WHOLE_MODES(LMUL)						\
+  VECTOR_MODE_WITH_PREFIX (RVMM, INT, QI, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, INT, HI, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, FLOAT, HF, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, INT, SI, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, FLOAT, SF, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, INT, DI, LMUL, 0);			\
+  VECTOR_MODE_WITH_PREFIX (RVMM, FLOAT, DF, LMUL, 0);			\
+									\
+  ADJUST_NUNITS (RVMM##LMUL##QI,					\
+		 th_m_adjust_nunits (RVMM##LMUL##QImode, LMUL, 8));	\
+  ADJUST_NUNITS (RVMM##LMUL##HI,					\
+		 th_m_adjust_nunits (RVMM##LMUL##HImode, LMUL, 4));	\
+  ADJUST_NUNITS (RVMM##LMUL##SI,					\
+		 th_m_adjust_nunits (RVMM##LMUL##SImode, LMUL, 2));	\
+  ADJUST_NUNITS (RVMM##LMUL##DI,					\
+		 th_m_adjust_nunits (RVMM##LMUL##DImode, LMUL, 1));	\
+  ADJUST_NUNITS (RVMM##LMUL##HF,					\
+		 th_m_adjust_nunits (RVMM##LMUL##HFmode, LMUL, 4));	\
+  ADJUST_NUNITS (RVMM##LMUL##SF,					\
+		 th_m_adjust_nunits (RVMM##LMUL##SFmode, LMUL, 2));	\
+  ADJUST_NUNITS (RVMM##LMUL##DF,					\
+		 th_m_adjust_nunits (RVMM##LMUL##DFmode, LMUL, 1));	\
+									\
+  ADJUST_ALIGNMENT (RVMM##LMUL##QI, 1);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##HI, 2);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##SI, 4);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##DI, 8);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##HF, 2);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##SF, 4);					\
+  ADJUST_ALIGNMENT (RVMM##LMUL##DF, 8);
 
-RVM_MODES (64, 32, 16, 8)
+RVM_WHOLE_MODES (1)
+RVM_WHOLE_MODES (2)
+RVM_WHOLE_MODES (4)
+RVM_WHOLE_MODES (8)
 
 /* A 8-tuple of RVV vectors with the maximum -mrvv-vector-bits= setting.
    Note that this is a limit only on the compile-time sizes of modes;

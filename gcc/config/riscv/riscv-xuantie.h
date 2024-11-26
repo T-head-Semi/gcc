@@ -52,6 +52,7 @@
    TARGET_XTHEAD_SE ? "e902" :		\
    "rocket")
 
+#define RISCV_TUNE_C907_P (riscv_microarchitecture == c907)
 #define RISCV_TUNE_C908_P (riscv_microarchitecture == c908)
 
 /* True if VALUE is an unsigned 16-bit number.  */
@@ -82,6 +83,8 @@
 #define TARGET_XTHEAD_ZPSFOPERAND TARGET_ZPSFOPERAND
 #define TARGET_XTHEAD_ZPRVSFEXTRA TARGET_ZPRVSFEXTRA
 
+#define TARGET_XTHEAD_UNALIGNED_ACCESS (riscv_unaligned_libcall	&& riscv_slow_unaligned_access_p)
+
 #define TARGET_VECTOR_TEMP_REGNUM	(GP_REG_FIRST + 31)
 #define TARGET_VECTOR_TEMP(MODE)	gen_rtx_REG (MODE, TARGET_VECTOR_TEMP_REGNUM)
 #define TARGET_VECTOR_TEMP2_REGNUM	(GP_REG_FIRST + 30)
@@ -92,6 +95,7 @@
 #define TARGET_VECTOR_FIXED (TARGET_VECTOR && riscv_rvv_chunks.is_constant ())
 
 #ifdef IN_TARGET_CODE
+extern const struct riscv_tune_param xt_c907_tune_info;
 extern const struct riscv_tune_param xt_c908_tune_info;
 extern const struct riscv_tune_param xt_c906v_tune_info;
 extern const struct riscv_tune_param xt_c910_tune_info;
@@ -155,6 +159,9 @@ riscv_matrix_x2_mode (machine_mode mode);
 
 void
 emit_libcall_insn_for_convert (rtx dest, rtx src, bool unsigned_p = false);
+
+void
+riscv_emit_libcall_for_unaligned_access (enum riscv_extraction_pattern, rtx *, machine_mode);
 
 #endif
 #endif

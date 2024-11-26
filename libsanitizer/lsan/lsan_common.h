@@ -42,6 +42,8 @@
 #define CAN_SANITIZE_LEAKS 1
 #elif SANITIZER_NETBSD
 #define CAN_SANITIZE_LEAKS 1
+#elif SANITIZER_RISCV64 && SANITIZER_LINUX
+#define CAN_SANITIZE_LEAKS 1
 #else
 #define CAN_SANITIZE_LEAKS 0
 #endif
@@ -262,6 +264,12 @@ int __lsan_is_turned_off();
 
 SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
 const char *__lsan_default_suppressions();
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __lsan_register_root_region(const void *p, __lsan::uptr size);
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __lsan_unregister_root_region(const void *p, __lsan::uptr size);
 }  // extern "C"
 
 #endif  // LSAN_COMMON_H

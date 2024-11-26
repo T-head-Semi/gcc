@@ -57,7 +57,8 @@ enum riscv_microarchitecture_type {
   sifive_7,
   c910,
   c906v,
-  c908
+  c908,
+  c907
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
 
@@ -76,6 +77,9 @@ enum riscv_rvv_vector_bits_enum {
   RVV_512 = 512,
   RVV_1024 = 1024
 };
+
+/* Enumerates the possible extraction_insn operations.  */
+enum riscv_extraction_pattern { RISCV_EP_INSV, RISCV_EP_EXTV, RISCV_EP_EXTZV };
 
 #define MASK_ZBA (1 << 0)
 #define MASK_ZBB (1 << 1)

@@ -1,0 +1,52 @@
+# Copyright (C) 2017-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't a RISC-V target.
+if ![istarget riscv*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+if { [istarget riscv*musl*] } {
+    # Main loop.
+    if { [istarget riscv32*musl*] } {
+      dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*rv32.C]] "-I$srcdir/$subdir/../ " ""
+    } else {
+      dg-runtest [lsort [lsearch -all -inline -not [glob -nocomplain $srcdir/$subdir/*.C] {*rv32.C}]] "-I$srcdir/$subdir/../ " ""
+    }
+
+    # All done.
+    dg-finish
+    return
+}
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C\]]] \
+	"-I$srcdir/$subdir/../ -O0" ""
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C\]]] \
+	"-I$srcdir/$subdir/../ -O2" ""
+
+# All done.
+dg-finish

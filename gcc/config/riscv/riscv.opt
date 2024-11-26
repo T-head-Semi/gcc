@@ -316,6 +316,10 @@ mfwprop-vmov-v0p7
 Target Report Var(riscv_fwprop_vmov_v0p7) Init(1) Undocumented
 Forward propagrate whole register vmov for v0p7.
 
+munaligned-libcall
+Target Report Var(riscv_unaligned_libcall) Init(0)
+Enable libcall for unaligned access.
+
 mdelete-fsrm
 Target Report Var(riscv_insn_dfsrm) Init(1) Undocumented
 Optimize code by deleting redundancy fsrm.
@@ -335,6 +339,10 @@ Enable copy feature in pass combine.
 mload-merging
 Target Report Var(riscv_load_merging) Init(0) Undocumented
 Enable adjacent loads, and then extract for each element.
+
+mlcm-mcfg
+Target Report Var(riscv_lcm_mcfg) Init(1) Undocumented
+Redundancy elimination optimization for mcfg instructions using the LCM algorithm.
 
 mccrt
 Target Report Var(riscv_libcc_runtime)

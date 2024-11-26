@@ -151,7 +151,7 @@ ASM_MISA_SPEC
 /* The `Q' extension is not yet supported.  */
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 #define UNITS_PER_V_REG (GET_MODE_SIZE (VNx2DImode))
-#define UNITS_PER_M_REG (GET_MODE_SIZE (E_M64QImode))
+#define UNITS_PER_M_REG (GET_MODE_SIZE (RVMM1QImode))
 
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
@@ -1057,6 +1057,10 @@ while (0)
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
 extern unsigned riscv_stack_boundary;
+
+extern poly_uint16 riscv_matrix_chunks;
+extern bool th_m_ext_mode_p (enum machine_mode);
+extern poly_int64 th_m_adjust_nunits (enum machine_mode, int, int);
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \
@@ -1121,15 +1125,15 @@ extern tree bf16_type_node;
 
 #ifndef USED_FOR_TARGET
 extern poly_uint16 riscv_rvv_chunks;
-extern poly_uint16 riscv_rvm_chunks;
+extern poly_uint16 riscv_matrix_chunks;
 
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RVV_VECTOR (poly_uint16 (riscv_rvv_chunks * 64))
 #define BYTES_PER_RVV_VECTOR (poly_uint16 (riscv_rvv_chunks * 8))
 
 /* The number of bits and bytes in a RVM matrix.  */
-#define BITS_PER_RVM_MATRIX (poly_uint16 (riscv_rvm_chunks * 64))
-#define BYTES_PER_RVM_MATRIX (poly_uint16 (riscv_rvm_chunks * 8))
+#define BITS_PER_RVM_MATRIX (poly_uint16 (riscv_matrix_chunks * 64))
+#define BYTES_PER_RVM_MATRIX (poly_uint16 (riscv_matrix_chunks * 8))
 #endif
 
 /* Minimal value of VLEN in bytes.  */

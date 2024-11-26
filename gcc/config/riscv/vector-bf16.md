@@ -250,6 +250,33 @@
    (set_attr "mode" "none")
    (set_attr "emode" "<BFVSUBMODE>")])
 
+(define_expand "extend<mode><bfvwmode>2_mask"
+  [(parallel [(set (match_operand:<BFVWMODE> 0 "register_operand")
+		   (unspec:<BFVWMODE>
+		     [(match_operand:<BFVCMPEQUIV> 1 "register_operand")
+		      (float_extend:<BFVWMODE>
+			  (match_operand:BFVMODE1 2 "register_operand"))
+		      (reg:SI VL_REGNUM)]
+		    UNSPEC_USEVL))
+	      (use (reg:<BFVLMODE> VTYPE_REGNUM))])]
+  "TARGET_VECTOR && TARGET_HARD_FLOAT"
+{
+})
+
+(define_insn "*extend<mode><bfvwmode>2_mask_nosetvl"
+  [(set (match_operand:<BFVWMODE> 0 "register_operand" "=&vr")
+	(unspec:<BFVWMODE>
+	  [(match_operand:<BFVCMPEQUIV> 1 "register_operand" "vm")
+	   (float_extend:<BFVWMODE>
+	       (match_operand:BFVMODE1 2 "register_operand" "vr"))
+	   (reg:SI VL_REGNUM)]
+	 UNSPEC_USEVL))
+   (use (reg:<BFVLMODE> VTYPE_REGNUM))]
+  "TARGET_VECTOR && TARGET_HARD_FLOAT"
+  "vfwcvtbf16.f.f.v\t%0,%2,%1.t"
+  [(set_attr "type" "vfcvt")
+   (set_attr "mode" "none")
+   (set_attr "emode" "<BFVSUBMODE>")])
 
 ;; FP32 to BF16
 (define_expand "trunc<bfvwmode><mode>2"
@@ -278,6 +305,33 @@
    (set_attr "mode" "none")
    (set_attr "emode" "<BFVSUBMODE>")])
 
+(define_expand "trunc<bfvwmode><mode>2_mask"
+  [(parallel [(set (match_operand:BFVMODE1 0 "register_operand")
+		   (unspec:BFVMODE1
+		     [(match_operand:<BFVCMPEQUIV> 1 "register_operand")
+		      (float_truncate:BFVMODE1
+			  (match_operand:<BFVWMODE> 2 "register_operand"))
+		      (reg:SI VL_REGNUM)]
+		    UNSPEC_USEVL))
+	      (use (reg:<BFVLMODE> VTYPE_REGNUM))])]
+  "TARGET_VECTOR && TARGET_HARD_FLOAT"
+{
+})
+
+(define_insn "*trunc<bfvwmode><mode>2_mask_nosetvl"
+  [(set (match_operand:BFVMODE1 0 "register_operand" "=&vr")
+	(unspec:BFVMODE1
+	  [(match_operand:<BFVCMPEQUIV> 1 "register_operand" "vm")
+	     (float_truncate:BFVMODE1
+	     (match_operand:<BFVWMODE> 2 "register_operand" "vr"))
+	   (reg:SI VL_REGNUM)]
+	 UNSPEC_USEVL))
+   (use (reg:<BFVLMODE> VTYPE_REGNUM))]
+  "TARGET_VECTOR && TARGET_HARD_FLOAT"
+  "vfncvtbf16.f.f.w\t%0,%2,%1.t"
+  [(set_attr "type" "vfcvt")
+   (set_attr "mode" "none")
+   (set_attr "emode" "<BFVSUBMODE>")])
 
 ;; INT to BF16
 (define_expand "reinterpret_<mode><bfvintequiv>"

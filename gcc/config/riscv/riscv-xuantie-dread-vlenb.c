@@ -51,19 +51,25 @@ static bool
 delete_redundant_read_vlenb(void)
 {
   basic_block bb;
+  hash_set<rtx_insn *> all_dominated_read_vlenb;
   rtx_insn *insn, *curr;
 
   int deleted_read_vlenb_count = 0;
   int frame_related_insn_count = 0;
   bool sp_use_by_nonframe = false;
 
-  rtx_insn *first_read_vlenb = NULL;
   rtx_insn *prologue_save = NULL;
   rtx_insn *epilogue_restore = NULL;
   rtx pat, src, dest;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  calculate_dominance_info(CDI_DOMINATORS);
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
+
+  for (int idx = 0; idx < postorder_num; idx++)
     {
+      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[idx]);
+      int num_read_vlenb_in_block = 0;
       FOR_BB_INSNS_SAFE (bb, insn, curr)
 	{
 	  if (!NONDEBUG_INSN_P (insn) || !NONJUMP_INSN_P (insn))
@@ -100,30 +106,55 @@ delete_redundant_read_vlenb(void)
 	  if (GET_CODE (dest) == REG && GP_REG_P (REGNO (dest))
 	      && GET_CODE (src) == CONST_POLY_INT && satisfies_constraint_vp (src))
 	    {
-	      if (!first_read_vlenb)
+	      num_read_vlenb_in_block++;
+	      if (all_dominated_read_vlenb.is_empty())
 		{
 		  /* Found first insn of reading vlenb.  */
-		  first_read_vlenb = insn;
+		  all_dominated_read_vlenb.add(insn);
 		  if (dump_file)
-		    fprintf (dump_file, "Found first insn of reading vlenb: %d.\n",
+		    fprintf (dump_file,
+			     "Found first insn of reading vlenb: %d.\n",
 			     INSN_UID (insn));
 		}
 	      else
 		{
-		  if (dump_file)
-		    fprintf (dump_file, "Delete insn %d.\n", INSN_UID (insn));
+		  /* The dominated indicate whether the read vlenb is
+		     dominated by previous. */
+		  bool dominated;
+		  /* If more than one read vlenb in a block, the second and
+		     the after must be dominated */
+		  if (num_read_vlenb_in_block > 1)
+		    dominated = true;
+		  else
+		    {
+		      dominated = false;
+		      for (auto it = all_dominated_read_vlenb.begin();
+			   it != all_dominated_read_vlenb.end();
+			   ++it)
+			dominated |= dominated_by_p(CDI_DOMINATORS, bb,
+						    BLOCK_FOR_INSN(*it));
+		    }
+		  if (!dominated)
+		    all_dominated_read_vlenb.add(insn);
+		  else
+		    {
+		      if (dump_file)
+			fprintf (dump_file, "Delete insn %d.\n",
+				 INSN_UID (insn));
+		      /* Replace all uses of new read with register s11
+			 and then delete it.  */
+		      replace_reg_uses (insn);
 
-		  /* Replace all uses of new read with register s11 and then delete it.  */
-		  replace_reg_uses (insn);
-
-		  /* Delete redundant reads.  */
-		  delete_insn (insn);
-		  deleted_read_vlenb_count++;
+		      /* Delete redundant reads.  */
+		      delete_insn (insn);
+		      deleted_read_vlenb_count++;
+		    }
 		}
 	    }
 	}
     }
 
+  free_dominance_info(CDI_DOMINATORS);
   if (dump_file)
     fprintf (dump_file, "Deleted %d redundant insn of reading vlenb .\n",
 	     deleted_read_vlenb_count);
@@ -131,10 +162,15 @@ delete_redundant_read_vlenb(void)
   /* If we have deleted some reads of vlenb. */
   if (deleted_read_vlenb_count > 0)
     {
-      /* Replace uses of first read and store its value to register s11.  */
-      replace_reg_uses (first_read_vlenb);
-      rtx pat = PATTERN (first_read_vlenb);
-      replace_insn_regnum (&pat, SET_DEST (pat), VLENB_X_REGISTER);
+      /* Replace uses of all read and store its value to register s11.  */
+      for (auto it = all_dominated_read_vlenb.begin();
+	   it != all_dominated_read_vlenb.end();
+	   ++it)
+	{
+	  replace_reg_uses (*it);
+	  rtx pat = PATTERN (*it);
+	  replace_insn_regnum (&pat, SET_DEST (pat), VLENB_X_REGISTER);
+	}
       return true;
     }
   else

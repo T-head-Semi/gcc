@@ -1,0 +1,70 @@
+# Copyright (C) 2017-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Do not use -lm for mcpu
+# No other options than those specified in the test case are accepted.
+proc mcpu_init { } {
+    global board_info
+    global saved_mathlib
+    global current_target
+
+    pop_target
+    push_target $current_target
+
+    set dest [target_info name]
+    if [board_info $dest exists mathlib] {
+        set saved_mathlib [board_info $dest mathlib]
+    }
+    set board_info($dest,mathlib) " "
+}
+
+proc mcpu_finish { } {
+    global board_info
+    global saved_mathlib
+    global target_list
+
+    set dest [target_info name]
+    if [info exists saved_mathlib] {
+	set board_info($dest,mathlib) $saved_mathlib
+    } elseif [board_info $dest exists mathlib] {
+	unset board_info($dest,mathlib)
+    }
+
+    push_target $target_list
+}
+
+
+# Exit immediately if this isn't a RISC-V target.
+if ![istarget riscv*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+mcpu_init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+	"-static -nostartfiles -nostdlib --entry=main" ""
+
+mcpu_finish
+# All done.
+dg-finish

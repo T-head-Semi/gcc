@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv64gcv0p7 -mabi=lp64d -O2 -fno-inline" } */
 
 /* The issue is coming from
-     https://github.com/T-head-Semi/xuantie-gnu-toolchain/issues/5 */
+     https://github.com/XUANTIE-RV/xuantie-gnu-toolchain/issues/5 */
 
 #include <riscv_vector.h>
 

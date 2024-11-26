@@ -35,6 +35,15 @@ enum riscv_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLS_GD + 1)
 
+enum mlmul_type
+{
+  LMUL_1 = 0,
+  LMUL_2,
+  LMUL_4,
+  LMUL_8,
+  LMUL_NONE
+};
+
 /* Routines implemented in riscv.c.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
@@ -56,6 +65,7 @@ extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
 extern unsigned riscv_frame_register_number (unsigned);
+extern enum mlmul_type th_m_get_mlmul (machine_mode);
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
@@ -76,10 +86,6 @@ extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
-extern bool riscv_mul_accum_bypass_p (rtx_insn *, rtx_insn *);
-extern bool riscv_macro_fusion_pair_p (rtx_insn *, rtx_insn *);
-extern bool riscv_misc_fusion_pair_p (rtx_insn *, rtx_insn *);
-extern bool riscv_all_fusion_pair_p (rtx_insn *, rtx_insn *);
 
 /* Routines for vector support.  */
 bool riscv_const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
@@ -110,6 +116,7 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 
 /* XuanTie */
+rtl_opt_pass * make_pass_mcfg (gcc::context *ctxt);
 rtl_opt_pass * make_pass_delete_redundancy_sext1 (gcc::context *ctxt);
 rtl_opt_pass * make_pass_delete_redundancy_sext2 (gcc::context *ctxt);
 rtl_opt_pass * make_pass_xthead_dvsetvl (gcc::context *ctxt);
@@ -118,7 +125,6 @@ rtl_opt_pass * make_pass_xthead_dvsetvl_v0p7 (gcc::context *ctxt);
 rtl_opt_pass * make_pass_xthead_dread_vlenb (gcc::context *ctxt);
 rtl_opt_pass * make_pass_xthead_dread_vlenb_after_rnreg (gcc::context *ctxt);
 class gimple_opt_pass;
-gimple_opt_pass *make_pass_load_merging (gcc::context *ctxt);
 
 bool target_subset_version_p (const char *subset, int major, int minor);
 

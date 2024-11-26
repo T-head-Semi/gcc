@@ -4242,7 +4242,7 @@ latex_elements = {
 
     'preamble': r'''
 \usepackage{draftwatermark}
-\SetWatermarkText{XuanTie}
+\SetWatermarkText{Xuantie}
 ''',
 }
 

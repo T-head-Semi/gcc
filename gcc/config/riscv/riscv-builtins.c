@@ -109,6 +109,7 @@ along with GCC; see the file COPYING3.  If not see
 enum riscv_function_type {
 #define DEF_RISCV_FTYPE(NARGS, LIST) RISCV_FTYPE_NAME##NARGS LIST,
 #include "config/riscv/riscv-ftypes.def"
+#include "config/riscv/xuantie-matrix-ftypes.def"
 #include "config/riscv/riscv-ftypes-p.def"
 #undef DEF_RISCV_FTYPE
   RISCV_MAX_FTYPE_MAX
@@ -173,6 +174,8 @@ AVAIL (zvbf, TARGET_VECTOR && (TARGET_ZVFBFMIN || TARGET_ZVFBFWMA))
 AVAIL (zvbfmin, TARGET_VECTOR && TARGET_ZVFBFMIN)
 AVAIL (zvfbfwma, TARGET_VECTOR && TARGET_ZVFBFWMA)
 AVAIL (matrix, TARGET_MATRIX)
+AVAIL (matrix_rv32, TARGET_MATRIX && !TARGET_64BIT)
+AVAIL (matrix_rv64, TARGET_MATRIX && TARGET_64BIT)
 AVAIL (dsp, TARGET_XTHEAD_DSP)
 AVAIL (zfa, TARGET_RVZFA)
 AVAIL (zpsfoperand, TARGET_XTHEAD_ZPSFOPERAND)
@@ -185,6 +188,7 @@ DECL_CHECKER(vector_extract)
 DECL_CHECKER(vector_tuple_extract)
 DECL_CHECKER(vector_v0p7)
 DECL_CHECKER(vector_support_rv32)
+DECL_CHECKER(matrix_tuple_check)
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -529,20 +533,50 @@ DECL_CHECKER(vector_support_rv32)
 #define RISCV_ATYPE_VUI64M4X2 rvvuint64m4x2_t_node
 #define RISCV_ATYPE_VF64M4X2  rvvfloat64m4x2_t_node
 
-#define RISCV_ATYPE_MINT8  rvmint8_t_node
-#define RISCV_ATYPE_MINT16  rvmint16_t_node
-#define RISCV_ATYPE_MINT32  rvmint32_t_node
-#define RISCV_ATYPE_MINT64  rvmint64_t_node
-#define RISCV_ATYPE_MUINT8  rvmuint8_t_node
-#define RISCV_ATYPE_MUINT16  rvmuint16_t_node
-#define RISCV_ATYPE_MUINT32  rvmuint32_t_node
-#define RISCV_ATYPE_MUINT64  rvmuint64_t_node
-#define RISCV_ATYPE_MFLOAT16  rvmfloat16_t_node
-#define RISCV_ATYPE_MFLOAT32  rvmfloat32_t_node
-#define RISCV_ATYPE_MFLOAT64  rvmfloat64_t_node
-#define RISCV_ATYPE_MFLOAT16X2  rvmfloat16x2_t_node
-#define RISCV_ATYPE_MFLOAT32X2  rvmfloat32x2_t_node
-#define RISCV_ATYPE_MFLOAT64X2  rvmfloat64x2_t_node
+#define RISCV_ATYPE_RVMM1QI RVMM1QI_node
+#define RISCV_ATYPE_RVMM1HI RVMM1HI_node
+#define RISCV_ATYPE_RVMM1SI RVMM1SI_node
+#define RISCV_ATYPE_RVMM1DI RVMM1DI_node
+#define RISCV_ATYPE_RVMM1UQI RVMM1UQI_node
+#define RISCV_ATYPE_RVMM1UHI RVMM1UHI_node
+#define RISCV_ATYPE_RVMM1USI RVMM1USI_node
+#define RISCV_ATYPE_RVMM1UDI RVMM1UDI_node
+#define RISCV_ATYPE_RVMM1HF RVMM1HF_node
+#define RISCV_ATYPE_RVMM1SF RVMM1SF_node
+#define RISCV_ATYPE_RVMM1DF RVMM1DF_node
+#define RISCV_ATYPE_RVMM2QI RVMM2QI_node
+#define RISCV_ATYPE_RVMM2HI RVMM2HI_node
+#define RISCV_ATYPE_RVMM2SI RVMM2SI_node
+#define RISCV_ATYPE_RVMM2DI RVMM2DI_node
+#define RISCV_ATYPE_RVMM2UQI RVMM2UQI_node
+#define RISCV_ATYPE_RVMM2UHI RVMM2UHI_node
+#define RISCV_ATYPE_RVMM2USI RVMM2USI_node
+#define RISCV_ATYPE_RVMM2UDI RVMM2UDI_node
+#define RISCV_ATYPE_RVMM2HF RVMM2HF_node
+#define RISCV_ATYPE_RVMM2SF RVMM2SF_node
+#define RISCV_ATYPE_RVMM2DF RVMM2DF_node
+#define RISCV_ATYPE_RVMM4QI RVMM4QI_node
+#define RISCV_ATYPE_RVMM4HI RVMM4HI_node
+#define RISCV_ATYPE_RVMM4SI RVMM4SI_node
+#define RISCV_ATYPE_RVMM4DI RVMM4DI_node
+#define RISCV_ATYPE_RVMM4UQI RVMM4UQI_node
+#define RISCV_ATYPE_RVMM4UHI RVMM4UHI_node
+#define RISCV_ATYPE_RVMM4USI RVMM4USI_node
+#define RISCV_ATYPE_RVMM4UDI RVMM4UDI_node
+#define RISCV_ATYPE_RVMM4HF RVMM4HF_node
+#define RISCV_ATYPE_RVMM4SF RVMM4SF_node
+#define RISCV_ATYPE_RVMM4DF RVMM4DF_node
+#define RISCV_ATYPE_RVMM8QI RVMM8QI_node
+#define RISCV_ATYPE_RVMM8HI RVMM8HI_node
+#define RISCV_ATYPE_RVMM8SI RVMM8SI_node
+#define RISCV_ATYPE_RVMM8DI RVMM8DI_node
+#define RISCV_ATYPE_RVMM8UQI RVMM8UQI_node
+#define RISCV_ATYPE_RVMM8UHI RVMM8UHI_node
+#define RISCV_ATYPE_RVMM8USI RVMM8USI_node
+#define RISCV_ATYPE_RVMM8UDI RVMM8UDI_node
+#define RISCV_ATYPE_RVMM8HF RVMM8HF_node
+#define RISCV_ATYPE_RVMM8SF RVMM8SF_node
+#define RISCV_ATYPE_RVMM8DF RVMM8DF_node
 
 /* Helper type nodes for vector support.  */
 tree const_float_ptr_type_node;
@@ -581,23 +615,23 @@ tree rvvbfloat16m4_t_node;
 tree rvvbfloat16m8_t_node;
 
 /* Matrix type nodes. */
-tree  rvmint8_t_node;
-tree  rvmint16_t_node;
-tree  rvmint32_t_node;
-tree  rvmint64_t_node;
+#define DEFINE_MATRIX_TYPE_NODE(PREFIX, LMUL)	\
+  tree RVMM##LMUL##QI_node;			\
+  tree RVMM##LMUL##HI_node;			\
+  tree RVMM##LMUL##SI_node;			\
+  tree RVMM##LMUL##DI_node;			\
+  tree RVMM##LMUL##UQI_node;			\
+  tree RVMM##LMUL##UHI_node;			\
+  tree RVMM##LMUL##USI_node;			\
+  tree RVMM##LMUL##UDI_node;			\
+  tree RVMM##LMUL##HF_node;			\
+  tree RVMM##LMUL##SF_node;			\
+  tree RVMM##LMUL##DF_node;
 
-tree  rvmuint8_t_node;
-tree  rvmuint16_t_node;
-tree  rvmuint32_t_node;
-tree  rvmuint64_t_node;
-
-tree  rvmfloat16_t_node;
-tree  rvmfloat32_t_node;
-tree  rvmfloat64_t_node;
-
-tree  rvmfloat16x2_t_node;
-tree  rvmfloat32x2_t_node;
-tree  rvmfloat64x2_t_node;
+DEFINE_MATRIX_TYPE_NODE(  , 1)
+DEFINE_MATRIX_TYPE_NODE(x2, 2)
+DEFINE_MATRIX_TYPE_NODE(x4, 4)
+DEFINE_MATRIX_TYPE_NODE(x8, 8)
 
 #define RISCV_DECL_FLOAT_TYPES(SEW, LMUL, MLEN,	MODE, SUBMODE) \
   tree rvvfloat##SEW##m##LMUL##_t_node;
@@ -2610,7 +2644,7 @@ static const struct riscv_builtin_description riscv_builtins[] = {
   #include "config/riscv/riscv-builtins-p.def"
   #include "config/riscv/riscv-builtins-vector-v0p7.def"
   #include "config/riscv/riscv-builtins-vector-thead.def"
-  #include "config/riscv/riscv-builtins-matrix.def"
+  #include "config/riscv/xuantie-matrix-builtins.def"
   #include "config/riscv/riscv-builtins-vector-bf16.def"
 
   DIRECT_NAMED (fminmsf3, fminmf, RISCV_SF_FTYPE_SF_SF, zfa),
@@ -2940,6 +2974,7 @@ riscv_build_function_type (enum riscv_function_type type)
     break;
 #include "config/riscv/riscv-ftypes.def"
 #include "config/riscv/riscv-ftypes-p.def"
+#include "config/riscv/xuantie-matrix-ftypes.def"
 #undef DEF_RISCV_FTYPE
       default:
 	gcc_unreachable ();
@@ -2987,15 +3022,66 @@ builtin_vector_type_p (const_tree type)
   return lookup_rvv_type_attribute (type);
 }
 
-/* If TYPE is a built-in type defined by the RVV ABI, return the mangled name,
+#define RVM_TYPE_ATTR_NAME "RVM type"
+const char *MATRIX_ABI_NAME_PREFIX = "__xthm";
+
+/* Add type attributes to builtin type tree, currently only the mangled name. */
+
+static void
+add_matrix_type_attribute (tree type, const char *type_name)
+{
+  SET_TYPE_STRUCTURAL_EQUALITY (type);
+  TYPE_ARTIFICIAL (type) = 1;
+  TYPE_INDIVISIBLE_P (type) = 1;
+
+  const char *abi_name = concat(MATRIX_ABI_NAME_PREFIX, "_", type_name, NULL);
+
+  char mangled_name[25]; /* Max length is strlen(__xthm_mfloat16x2_t).  */
+  snprintf (mangled_name, sizeof (mangled_name),
+    "u%d%s", (int) strlen (abi_name), abi_name);
+
+  tree mangled_name_tree = get_identifier (mangled_name);
+  tree value = tree_cons (NULL_TREE, mangled_name_tree, NULL_TREE);
+  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier (RVM_TYPE_ATTR_NAME), value,
+				      TYPE_ATTRIBUTES (type));
+}
+
+/* If TYPE is an ABI-defined RVM type, return its attribute descriptor,
+   otherwise return null.  */
+
+static tree
+lookup_rvm_type_attribute (const_tree type)
+{
+  if (type == error_mark_node)
+    return NULL_TREE;
+  return lookup_attribute (RVM_TYPE_ATTR_NAME, TYPE_ATTRIBUTES (type));
+}
+
+/* Return true if TYPE is a built-in RVM type.  */
+bool
+builtin_matrix_type_p (const_tree type)
+{
+  return lookup_rvm_type_attribute (type);
+}
+
+/* If TYPE is a built-in type defined by the RVM ABI, return the mangled name,
    otherwise return NULL.  */
 
 const char *
 riscv_mangle_builtin_type (const_tree type)
 {
+  tree attr = NULL_TREE;
   if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
     type = TREE_TYPE (TYPE_NAME (type));
-  if (tree attr = lookup_rvv_type_attribute (type))
+
+  if (TARGET_VECTOR && VECTOR_MODE_P (TYPE_MODE (type)))
+    attr = lookup_rvv_type_attribute (type);
+  else if (TARGET_MATRIX && th_m_ext_mode_p (TYPE_MODE (type)))
+    attr = lookup_rvm_type_attribute (type);
+  else
+    return NULL;
+
+  if (attr)
     if (tree id = TREE_VALUE (chain_index (0, TREE_VALUE (attr))))
       return IDENTIFIER_POINTER (id);
   return NULL;
@@ -3012,6 +3098,26 @@ riscv_vector_type (const char *name, tree elt_type, enum machine_mode mode)
   /* Copy so we don't give the canonical type a name.  */
   result = build_distinct_type_copy (result);
   add_vector_type_attribute(result, name);
+
+  (*lang_hooks.types.register_builtin_type) (result, name);
+
+  return result;
+}
+
+/* Create a builtin vector type with a name.  Taking care not to give
+   the canonical type a name.  */
+
+static tree
+riscv_matrix_type (const char *name, tree elt_type, enum machine_mode mode)
+{
+  if (!th_m_ext_mode_p (mode))
+    return NULL_TREE;
+
+  tree result = build_vector_type_for_mode (elt_type, mode);
+
+  /* Copy so we don't give the canonical type a name.  */
+  result = build_distinct_type_copy (result);
+  add_matrix_type_attribute(result, name);
 
   (*lang_hooks.types.register_builtin_type) (result, name);
 
@@ -3076,6 +3182,54 @@ riscv_vector_tuple_type (const char *name,
   return tuple_type;
 }
 
+static void
+riscv_init_matrix_type (void)
+{
+  if(!TARGET_MATRIX)
+    return;
+
+  /* These types exist only for the ld/st intrinsics.  */
+   const_float_ptr_type_node
+    = build_pointer_type (build_type_variant (float_type_node, 1, 0));
+  const_double_ptr_type_node
+    = build_pointer_type (build_type_variant (double_type_node, 1, 0));
+  float16_ptr_type_node = build_pointer_type (fp16_type_node);
+  const_float16_type_node = build_type_variant (fp16_type_node, 1, 0);
+  const_float16_ptr_type_node
+    = build_pointer_type (const_float16_type_node);
+
+#define DEFINE_SCALAR_PTR_TYPE_NODE(WIDTH, MODE)			\
+  int##MODE##_ptr_type_node					\
+    = build_pointer_type (int##WIDTH##_type_node); 		\
+  unsigned_int##MODE##_ptr_type_node				\
+    = build_pointer_type (unsigned_int##WIDTH##_type_node);	\
+  const_int##MODE##_ptr_type_node					\
+    = build_pointer_type (					\
+  build_type_variant (int##WIDTH##_type_node, 1, 0));	\
+  const_unsigned_int##MODE##_ptr_type_node			\
+    = build_pointer_type (					\
+  build_type_variant (unsigned_int##WIDTH##_type_node, 1, 0));
+
+  _SCALAR_INT_ITERATOR(DEFINE_SCALAR_PTR_TYPE_NODE);
+
+#define DEFINE_MATRIX_TYPE(PREFIX, LMUL)										\
+  RVMM##LMUL##QI_node	= riscv_matrix_type ("mint8" #PREFIX "_t",  intQI_type_node, 		RVMM##LMUL##QImode);	\
+  RVMM##LMUL##HI_node	= riscv_matrix_type ("mint16" #PREFIX "_t", intHI_type_node, 		RVMM##LMUL##HImode);	\
+  RVMM##LMUL##SI_node	= riscv_matrix_type ("mint32" #PREFIX "_t", intSI_type_node, 		RVMM##LMUL##SImode);	\
+  RVMM##LMUL##DI_node	= riscv_matrix_type ("mint64" #PREFIX "_t", intDI_type_node, 		RVMM##LMUL##DImode);	\
+  RVMM##LMUL##UQI_node	= riscv_matrix_type ("muint8" #PREFIX "_t",  unsigned_intQI_type_node, 	RVMM##LMUL##QImode);	\
+  RVMM##LMUL##UHI_node	= riscv_matrix_type ("muint16" #PREFIX "_t", unsigned_intHI_type_node, 	RVMM##LMUL##HImode);	\
+  RVMM##LMUL##USI_node	= riscv_matrix_type ("muint32" #PREFIX "_t", unsigned_intSI_type_node, 	RVMM##LMUL##SImode);	\
+  RVMM##LMUL##UDI_node	= riscv_matrix_type ("muint64" #PREFIX "_t", unsigned_intDI_type_node, 	RVMM##LMUL##DImode);	\
+  RVMM##LMUL##HF_node	= riscv_matrix_type ("mfloat16" #PREFIX "_t", fp16_type_node,   	RVMM##LMUL##HFmode);	\
+  RVMM##LMUL##SF_node	= riscv_matrix_type ("mfloat32" #PREFIX "_t", float_type_node,  	RVMM##LMUL##SFmode);	\
+  RVMM##LMUL##DF_node	= riscv_matrix_type ("mfloat64" #PREFIX "_t", double_type_node, 	RVMM##LMUL##DFmode);	\
+
+  DEFINE_MATRIX_TYPE(  , 1)
+  DEFINE_MATRIX_TYPE(x2, 2)
+  DEFINE_MATRIX_TYPE(x4, 4)
+  DEFINE_MATRIX_TYPE(x8, 8)
+}
 
 /* Implement TARGET_INIT_BUILTINS.  */
 
@@ -3371,50 +3525,7 @@ _RVV_SEG_ARG (RISCV_DEFINE_SEG_TYPES, X)
 
     }
 
-  if(TARGET_MATRIX){
-
-      /* These types exist only for the ld/st intrinsics.  */
-      const_float_ptr_type_node
-	= build_pointer_type (build_type_variant (float_type_node, 1, 0));
-      const_double_ptr_type_node
-	= build_pointer_type (build_type_variant (double_type_node, 1, 0));
-      float16_ptr_type_node = build_pointer_type (fp16_type_node);
-      const_float16_type_node = build_type_variant (fp16_type_node, 1, 0);
-      const_float16_ptr_type_node
-	= build_pointer_type (const_float16_type_node);
-
-      #define DEFINE_SCALAR_PTR_TYPE_NODE(WIDTH, MODE)			\
-	int##MODE##_ptr_type_node					\
-	  = build_pointer_type (int##WIDTH##_type_node); 		\
-	unsigned_int##MODE##_ptr_type_node				\
-	  = build_pointer_type (unsigned_int##WIDTH##_type_node);	\
-	const_int##MODE##_ptr_type_node					\
-	  = build_pointer_type (					\
-	      build_type_variant (int##WIDTH##_type_node, 1, 0));	\
-	const_unsigned_int##MODE##_ptr_type_node			\
-	  = build_pointer_type (					\
-	      build_type_variant (unsigned_int##WIDTH##_type_node, 1, 0));
-
-      _SCALAR_INT_ITERATOR(DEFINE_SCALAR_PTR_TYPE_NODE);
-
-      rvmint8_t_node = riscv_vector_type ("mint8_t", intQI_type_node, M64QImode);
-      rvmint16_t_node = riscv_vector_type ("mint16_t", intHI_type_node, M32HImode);
-      rvmint32_t_node = riscv_vector_type ("mint32_t", intSI_type_node, M16SImode);
-      rvmint64_t_node = riscv_vector_type ("mint64_t", intDI_type_node, M8DImode);
-
-      rvmuint8_t_node = riscv_vector_type ("muint8_t", unsigned_intQI_type_node, M64QImode);
-      rvmuint16_t_node = riscv_vector_type ("muint16_t", unsigned_intHI_type_node, M32HImode);
-      rvmuint32_t_node = riscv_vector_type ("muint32_t", unsigned_intSI_type_node, M16SImode);
-      rvmuint64_t_node = riscv_vector_type ("muint64_t", unsigned_intDI_type_node, M8DImode);
-
-      rvmfloat16_t_node = riscv_vector_type ("mfloat16_t", fp16_type_node, M32HFmode);
-      rvmfloat32_t_node = riscv_vector_type ("mfloat32_t", float_type_node, M16SFmode);
-      rvmfloat64_t_node = riscv_vector_type ("mfloat64_t", double_type_node, M8DFmode);
-
-      rvmfloat16x2_t_node = riscv_vector_type ("mfloat16x2_t", fp16_type_node, M2x32HFmode);
-      rvmfloat32x2_t_node = riscv_vector_type ("mfloat32x2_t", float_type_node, M2x16SFmode);
-      rvmfloat64x2_t_node = riscv_vector_type ("mfloat64x2_t", double_type_node, M2x8DFmode);
-    }
+  riscv_init_matrix_type ();
 
   for (size_t i = 0; i < ARRAY_SIZE (riscv_builtins); i++)
     {
@@ -3790,4 +3901,36 @@ DEF_CHECKER (vector_support_rv32)
     }
 
   return true;
+}
+
+DEF_CHECKER (matrix_tuple_check)
+{
+  tree index;
+  HOST_WIDE_INT actual;
+  tree fndecl = get_callee_fndecl (exp);
+
+  if (call_expr_nargs (exp) < 1)
+    return false;
+
+  index = CALL_EXPR_ARG (exp, 1);
+
+  if (!tree_fits_uhwi_p (index))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"argument %d of %qE must be an integer constant"
+		" expression", 2, fndecl);
+      return false;
+    }
+
+  actual = tree_to_uhwi (index);
+  if (!IN_RANGE (actual, 0, 1))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"passing %wd to argument %d of %qE, which expects"
+		" a value in the range [%wd, %wd]",
+		actual, 2, fndecl, 0, 1);
+      return false;
+    }
+
+  return true;;
 }

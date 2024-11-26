@@ -65,11 +65,23 @@ DIRECT_NAMED (extendvnx8bfvnx8sf2, vfwcvtbf16_f_f_v_f32m2, RISCV_VF32M2_FTYPE_VB
 DIRECT_NAMED (extendvnx16bfvnx16sf2, vfwcvtbf16_f_f_v_f32m4, RISCV_VF32M4_FTYPE_VBF16M2, zvbfmin),
 DIRECT_NAMED (extendvnx32bfvnx32sf2, vfwcvtbf16_f_f_v_f32m8, RISCV_VF32M8_FTYPE_VBF16M4, zvbfmin),
 
+DIRECT_NAMED (extendvnx2bfvnx2sf2_mask, vfwcvtbf16_f_f_v_f32mf2_mask, RISCV_VF32Mf2_FTYPE_VB64_VBF16Mf4, zvbfmin),
+DIRECT_NAMED (extendvnx4bfvnx4sf2_mask, vfwcvtbf16_f_f_v_f32m1_mask, RISCV_VF32M1_FTYPE_VB32_VBF16Mf2, zvbfmin),
+DIRECT_NAMED (extendvnx8bfvnx8sf2_mask, vfwcvtbf16_f_f_v_f32m2_mask, RISCV_VF32M2_FTYPE_VB16_VBF16M1, zvbfmin),
+DIRECT_NAMED (extendvnx16bfvnx16sf2_mask, vfwcvtbf16_f_f_v_f32m4_mask, RISCV_VF32M4_FTYPE_VB8_VBF16M2, zvbfmin),
+DIRECT_NAMED (extendvnx32bfvnx32sf2_mask, vfwcvtbf16_f_f_v_f32m8_mask, RISCV_VF32M8_FTYPE_VB4_VBF16M4, zvbfmin),
+
 DIRECT_NAMED (truncvnx2sfvnx2bf2, vfncvtbf16_f_f_w_bf16mf4, RISCV_VBF16Mf4_FTYPE_VF32Mf2, zvbfmin),
 DIRECT_NAMED (truncvnx4sfvnx4bf2, vfncvtbf16_f_f_w_bf16mf2, RISCV_VBF16Mf2_FTYPE_VF32M1, zvbfmin),
 DIRECT_NAMED (truncvnx8sfvnx8bf2, vfncvtbf16_f_f_w_bf16m1, RISCV_VBF16M1_FTYPE_VF32M2, zvbfmin),
 DIRECT_NAMED (truncvnx16sfvnx16bf2, vfncvtbf16_f_f_w_bf16m2, RISCV_VBF16M2_FTYPE_VF32M4, zvbfmin),
 DIRECT_NAMED (truncvnx32sfvnx32bf2, vfncvtbf16_f_f_w_bf16m4, RISCV_VBF16M4_FTYPE_VF32M8, zvbfmin),
+
+DIRECT_NAMED (truncvnx2sfvnx2bf2_mask, vfncvtbf16_f_f_w_bf16mf4_mask, RISCV_VBF16Mf4_FTYPE_VB64_VF32Mf2, zvbfmin),
+DIRECT_NAMED (truncvnx4sfvnx4bf2_mask, vfncvtbf16_f_f_w_bf16mf2_mask, RISCV_VBF16Mf2_FTYPE_VB32_VF32M1, zvbfmin),
+DIRECT_NAMED (truncvnx8sfvnx8bf2_mask, vfncvtbf16_f_f_w_bf16m1_mask, RISCV_VBF16M1_FTYPE_VB16_VF32M2, zvbfmin),
+DIRECT_NAMED (truncvnx16sfvnx16bf2_mask, vfncvtbf16_f_f_w_bf16m2_mask, RISCV_VBF16M2_FTYPE_VB8_VF32M4, zvbfmin),
+DIRECT_NAMED (truncvnx32sfvnx32bf2_mask, vfncvtbf16_f_f_w_bf16m4_mask, RISCV_VBF16M4_FTYPE_VB4_VF32M8, zvbfmin),
 
 DIRECT_NAMED (vfwmaccvnx2bf, vfwmaccbf16_vv_f32mf2, RISCV_VF32Mf2_FTYPE_VF32Mf2_VBF16Mf4_VBF16Mf4, zvfbfwma),
 DIRECT_NAMED (vfwmaccvnx4bf, vfwmaccbf16_vv_f32m1, RISCV_VF32M1_FTYPE_VF32M1_VBF16Mf2_VBF16Mf2, zvfbfwma),

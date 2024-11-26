@@ -59,6 +59,10 @@ riscv_xthead_option_override (const struct riscv_tune_param *tune_param,
   if (riscv_libcc_runtime && TARGET_64BIT)
     warning (0, "mccrt is only supported in rv32* arch");
 
+  /* For XTHEAD, when Ospace is turned on, X is turned on by default.  */
+  if (!opts->x_riscv_unaligned_libcall && optimize_size)
+    SET_OPTION_IF_UNSET (opts, opts_set, riscv_unaligned_libcall, 1);
+
   if (target_subset_version_p ("v", 0, 7))
     SET_OPTION_IF_UNSET (opts, opts_set,
 			 riscv_rvv_vector_bits,
@@ -793,6 +797,43 @@ riscv_init_libfuncs (void)
   set_optab_libfunc (unord_optab, BFmode, NULL);
 }
 
+/* Try to use libcall to extract bit field form mem. Return nonzero if using libcall.  */
+
+void
+riscv_emit_libcall_for_unaligned_access (enum riscv_extraction_pattern ep,
+					 rtx *operands, machine_mode mode)
+{
+  gcc_assert (mode == SImode || mode == DImode);
+
+  rtx libfunc = NULL_RTX;
+  switch (ep)
+    {
+    case RISCV_EP_INSV:
+      {
+	libfunc = init_one_libfunc (concat ("__thead_uwrite", (mode == SImode ? "4" : "8"), NULL));
+	emit_library_call (libfunc, LCT_NORMAL, mode,
+			   operands[3], mode,
+			   XEXP (operands[0], 0), Pmode);
+	emit_clobber (operands[0]);
+	return;
+      }
+    case RISCV_EP_EXTV:
+    case RISCV_EP_EXTZV:
+      {
+	libfunc = init_one_libfunc (concat ("__thead_uread", (mode == SImode ? "4" : "8"), NULL));
+	rtx target = emit_library_call_value (libfunc, operands[0], LCT_PURE, mode,
+					      XEXP (operands[1], 0), Pmode);
+	emit_use (operands[1]);
+	if (!rtx_equal_p (operands[0], target))
+	  emit_move_insn (operands[0], target);
+
+	return;
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Use libcall to convert SRC to DEST.  */
 
 void
@@ -867,52 +908,6 @@ riscv_iv_gen_load_index (HOST_WIDE_INT loop_niter,
   return true;
 }
 
-/* Nonzero if MODE is a matrix mode. */
-
-bool
-riscv_matrix_mode(machine_mode mode)
-{
-  switch (mode)
-  {
-  case E_M64QImode:
-  case E_M32HImode:
-  case E_M16SImode:
-  case E_M8DImode:
-  case E_M4TImode:
-  case E_M32HFmode:
-  case E_M16SFmode:
-  case E_M8DFmode:
-  case E_M4TFmode:
-  case E_M2x32HFmode:
-  case E_M2x16SFmode:
-  case E_M2x8DFmode:
-  case E_M2x4TFmode:
-    return true;
-  default:
-    break;
-  }
-
-  return false;
-}
-
-/* Nonzero if MODE is a matrix mode with 2 nregs. */
-
-bool
-riscv_matrix_x2_mode(machine_mode mode)
-{
-  switch (mode)
-  {
-  case E_M2x32HFmode:
-  case E_M2x16SFmode:
-  case E_M2x8DFmode:
-  case E_M2x4TFmode:
-    return true;
-  default:
-    break;
-  }
-  return false;
-}
-
 /* Implement TARGET_REGISTER_REJECT_INIT_P.  */
 
 static bool
@@ -921,7 +916,7 @@ riscv_register_reject_init_p (rtx reg)
   if (TARGET_VECTOR && VECTOR_MODE_P (GET_MODE (reg)))
     return true;
 
-  if (TARGET_MATRIX && riscv_matrix_mode (GET_MODE (reg)))
+  if (TARGET_MATRIX && th_m_ext_mode_p (GET_MODE (reg)))
     return true;
 
   return false;
@@ -956,6 +951,55 @@ riscv_expand_to_rtl_hook (void)
       cfun->machine->has_vector_ops_p = true;
       reinit_regs ();
     }
+}
+
+/* Return true if mode is the RVM enabled mode.  */
+bool
+th_m_ext_mode_p (machine_mode mode)
+{
+#undef ENTRY
+#define ENTRY(MODE, REQUIREMENT, ...)					\
+  case MODE##mode:							\
+    return REQUIREMENT;
+  switch (mode)
+    {
+#include "xuantie-matrix-switch.def"
+    default:
+      return false;
+    }
+
+  return false;
+}
+
+/* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
+   NUNITS size for corresponding machine_mode.  */
+poly_int64
+th_m_adjust_nunits (machine_mode mode, int lmul, int nf)
+{
+  if (th_m_ext_mode_p (mode))
+    {
+      return riscv_matrix_chunks * lmul * nf;
+    }
+
+  /* Set the disabled RVM modes size as 1 by default.  */
+  return 1;
+}
+
+enum mlmul_type
+th_m_get_mlmul (machine_mode mode)
+{
+#undef ENTRY
+  if (th_m_ext_mode_p (mode))
+#define ENTRY(MODE, REQUIREMENT, LMUL)					\
+  case MODE##mode:							\
+    return LMUL;
+  switch (mode)
+    {
+#include "xuantie-matrix-switch.def"
+    default:
+      gcc_unreachable ();
+    }
+  return LMUL_NONE;
 }
 
 #include "backend.h"

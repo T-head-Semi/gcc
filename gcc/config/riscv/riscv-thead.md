@@ -185,13 +185,69 @@
 
 ;; TARGET_XTHEAD_EXT
 
+;; Bit field extract form mem patterns.
+
+(define_expand "extvmisalign<mode>"
+  [(set (match_operand:GPR 0 "register_operand")
+	(sign_extract:GPR (match_operand:BLK 1 "memory_operand")
+			  (match_operand 2 "const_int_operand")
+			  (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEAD_UNALIGNED_ACCESS"
+{
+  if (INTVAL (operands[3]) == 0
+      && INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode))
+    {
+      riscv_emit_libcall_for_unaligned_access (RISCV_EP_EXTV, operands, <MODE>mode);
+      DONE;
+    }
+
+  FAIL;
+})
+
+(define_expand "extzvmisalign<mode>"
+  [(set (match_operand:GPR 0 "register_operand")
+	(zero_extract:GPR (match_operand:BLK 1 "memory_operand")
+			  (match_operand 2 "const_int_operand")
+			  (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEAD_UNALIGNED_ACCESS"
+{
+  if (INTVAL (operands[3]) == 0
+      && INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode))
+    {
+      riscv_emit_libcall_for_unaligned_access (RISCV_EP_EXTZV, operands, <MODE>mode);
+      DONE;
+    }
+
+  FAIL;
+})
+
+(define_expand "insvmisalign<mode>"
+  [(set (zero_extract:GPR (match_operand:BLK 0 "memory_operand")
+			 (match_operand 1 "const_int_operand")
+			 (match_operand 2 "const_int_operand"))
+	(match_operand:GPR 3 "register_operand"))]
+  "TARGET_XTHEAD_UNALIGNED_ACCESS"
+{
+  if (INTVAL (operands[2]) == 0
+      && INTVAL (operands[1]) == GET_MODE_BITSIZE (<MODE>mode))
+    {
+      riscv_emit_libcall_for_unaligned_access (RISCV_EP_INSV, operands, <MODE>mode);
+      DONE;
+    }
+
+  FAIL;
+})
+
 (define_insn "extvdi"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	    (sign_extract:DI (match_operand:DI 1 "register_operand" "r")
 			     (match_operand 2 "const_6bit_operand" "QcL")
 			     (match_operand 3 "const_6bit_operand" "QcL")))]
   "TARGET_XTHEAD_EXT && TARGET_64BIT"
-  "ext\t%0,%1,%2+%3-1,%3"
+  {
+    operands[2] = GEN_INT (INTVAL (operands[3]) + INTVAL (operands[2]) - 1);
+    return "ext\t%0,%1,%2,%3";
+  }
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
 
@@ -207,7 +263,11 @@
 	operands[4] = GEN_INT ((1 << INTVAL (operands[2])) - 1);
 	return "andi\t%0,%1,%4";
       }
-    return "extu\t%0,%1,%3+%2-1,%3";
+    else
+      {
+	operands[2] = GEN_INT (INTVAL (operands[3]) + INTVAL (operands[2]) - 1);
+	return "extu\t%0,%1,%2,%3";
+      }
   }
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
@@ -218,7 +278,10 @@
 			 (match_operand 2 "const_int_operand" "K")
 			 (match_operand 3 "const_int_operand" "K")))]
   "TARGET_XTHEAD_EXT && !TARGET_64BIT"
-  "ext\t%0,%1,%2+%3-1,%3"
+  {
+    operands[2] = GEN_INT (INTVAL (operands[3]) + INTVAL (operands[2]) - 1);
+    return "ext\t%0,%1,%2,%3";
+  }
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -234,7 +297,11 @@
 	operands[4] = GEN_INT ((1 << INTVAL (operands[2])) - 1);
 	return "andi\t%0,%1,%4";
       }
-    return "extu\t%0,%1,%3+%2-1,%3";
+     else
+      {
+	operands[2] = GEN_INT (INTVAL (operands[3]) + INTVAL (operands[2]) - 1);
+	return "extu\t%0,%1,%2,%3";
+      }
   }
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
@@ -462,13 +529,19 @@
   [(set (match_dup 4)
 	(zero_extract:DI (match_dup 0)
 			 (match_operand:DI 5 "const_int_operand" "i")
-			 (match_dup 1)))
+			 (match_operand:DI 6 "const_int_operand" "i")))
    (set (pc)
 	 (if_then_else
 	  (match_op_dup 2 [(match_dup 4) (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))]
-  "operands[5] = (GEN_INT (64 - INTVAL (operands[1])));"
+  {
+    HOST_WIDE_INT shift = INTVAL (operands[1]) % 64;
+    if (shift < 0)
+      shift += 64;
+    operands[5] = GEN_INT (64 - shift);
+    operands[6] = GEN_INT (shift);
+  }
 )
 
 ;; MULTIPLY ACCUMULATION
@@ -703,7 +776,7 @@
 			     [(match_operand:X 2 "register_operand" "r")
 			      (match_operand:X 3 "register_operand" "r")])
 			  (match_operand:GPR 4 "reg_or_0_operand" "rJ")
-			  (match_operand:GPR 5 "reg_or_0_operand" "rJ")))]
+			  (match_operand:GPR 5 "register_operand" "r")))]
   "TARGET_XTHEAD_CONDMV
    && !reload_completed"
   "#"
@@ -717,30 +790,28 @@
 )
 
 (define_insn "*xthead_cmovz<GPR:mode>"
-  [(set (match_operand:GPR 0 "register_operand"                     "=r, r, r")
-	(if_then_else:GPR (eq (match_operand:X 1 "register_operand" " r, r, 0")
+  [(set (match_operand:GPR 0 "register_operand"                     "=r, r")
+	(if_then_else:GPR (eq (match_operand:X 1 "register_operand" " r, r")
 			      (const_int 0))
-			  (match_operand:GPR 2 "reg_or_0_operand"    "rJ,0, J")
-			  (match_operand:GPR 3 "reg_or_0_operand"    " 0,rJ,r")))]
+			  (match_operand:GPR 2 "reg_or_0_operand"    "rJ, 0")
+			  (match_operand:GPR 3 "register_operand"    " 0, r")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mveqz\t%0, %z2, %1
-   mvnez\t%0, %z3, %1
-   mvnez\t%0, %3, %0"
+   mvnez\t%0, %3, %1"
   [(set_attr "type" "arith")]
 )
 
 (define_insn "*xthead_cmovn<GPR:mode>"
-  [(set (match_operand:GPR 0 "register_operand"                         "=r, r, r")
-	    (if_then_else:GPR (ne (match_operand:X 1 "register_operand" " r, 0, r")
+  [(set (match_operand:GPR 0 "register_operand"                         "=r, r")
+	    (if_then_else:GPR (ne (match_operand:X 1 "register_operand" " r, r")
 				  (const_int 0))
-			      (match_operand:GPR 2 "reg_or_0_operand"   "rJ, r, 0")
-			      (match_operand:GPR 3 "reg_or_0_operand"   " 0, J, rJ")))]
+			      (match_operand:GPR 2 "reg_or_0_operand"   "rJ, 0")
+			      (match_operand:GPR 3 "register_operand"   " 0, r")))]
   "TARGET_XTHEAD_CONDMV"
   "@
    mvnez\t%0, %z2, %1
-   mvnez\t%0, %2, %0
-   mveqz\t%0, %z3, %1"
+   mveqz\t%0, %3, %1"
   [(set_attr "type" "arith")]
 )
 
@@ -999,7 +1070,7 @@
   "ipush")
 
 
-;; C908 has a special acceleration for div and mod. When a div/mod instruction
+;; C908/C907 has a special acceleration for div and mod. When a div/mod instruction
 ;; is given after another mod/div and they use a common divisor and divisor,
 ;; only 2 extra cycles are needed for this current div/mod instruction.
 ;; To implement this features, we treat the div and mod pair as a single
@@ -1017,7 +1088,7 @@
    (set (match_operand:SI                    3 "register_operand" "=r")
 	(<any_divmod_mod>:SI (match_dup 1)
 			   (match_dup 2)))]
-  "TARGET_DIV && RISCV_TUNE_C908_P"
+  "TARGET_DIV && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)"
   { return TARGET_64BIT ?
     "div<any_divmod_u>w\t%0,%1,%2\n\t" "rem<any_divmod_u>w\t%3,%1,%2"
     : "div<any_divmod_u>\t%0,%1,%2\n\t" "rem<any_divmod_u>\t%3,%1,%2"; }
@@ -1032,7 +1103,7 @@
    (set (match_operand:DI                    3 "register_operand" "=r")
 	(<any_divmod_mod>:DI (match_dup 1)
 			   (match_dup 2)))]
-  "TARGET_DIV && TARGET_64BIT && RISCV_TUNE_C908_P"
+  "TARGET_DIV && TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)"
   { return "div<any_divmod_u>\t%0,%1,%2\n\t" "rem<any_divmod_u>\t%3,%1,%2"; }
   [(set_attr "length" "8")
    (set_attr "type" "idivmod")
@@ -1047,7 +1118,7 @@
 	(<any_divmod_extend>:DI
 	    (<any_divmod_mod>:SI (match_dup 1)
 				 (match_dup 2))))]
-  "TARGET_DIV && TARGET_64BIT && RISCV_TUNE_C908_P"
+  "TARGET_DIV && TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)"
   { return "div<any_divmod_u>w\t%0,%1,%2\n\t" "rem<any_divmod_u>w\t%3,%1,%2"; }
   [(set_attr "length" "8")
    (set_attr "type" "idivmod")
@@ -1061,7 +1132,7 @@
    (set (match_operand:SI                        3 "register_operand" "=r")
 	(<any_divmod_mod>:SI (match_dup 1)
 			     (match_dup 2)))]
-  "TARGET_DIV && TARGET_64BIT && RISCV_TUNE_C908_P"
+  "TARGET_DIV && TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)"
   { return "div<any_divmod_u>w\t%0,%1,%2\n\t" "rem<any_divmod_u>w\t%3,%1,%2"; }
   [(set_attr "length" "8")
    (set_attr "type" "idivmod")
@@ -1075,21 +1146,21 @@
 	(<any_divmod_extend>:DI
 	    (<any_divmod_mod>:SI (match_dup 1)
 				 (match_dup 2))))]
-  "TARGET_DIV && TARGET_64BIT && RISCV_TUNE_C908_P"
+  "TARGET_DIV && TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)"
   { return "div<any_divmod_u>w\t%0,%1,%2\n\t" "rem<any_divmod_u>w\t%3,%1,%2"; }
   [(set_attr "length" "8")
    (set_attr "type" "idivmod")
    (set_attr "mode" "DI")])
 
 
-;; C908 fuse load/store pair for si/di mode.
+;; C908/C907 fuse load/store pair for si/di mode.
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_operand:DI 1 "riscv_mem_classic_operand" ""))
    (set (match_operand:DI 2 "register_operand" "")
 	(match_operand:DI 3 "riscv_mem_classic_operand" ""))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[0]) != REGNO (operands[2])
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (DImode)))
@@ -1105,7 +1176,7 @@
 	(sign_extend:DI (match_operand:SI 1 "riscv_mem_classic_operand" "")))
    (set (match_operand:DI 2 "register_operand" "")
 	(sign_extend:DI (match_operand:SI 3 "riscv_mem_classic_operand" "")))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[0]) != REGNO (operands[2])
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
@@ -1121,7 +1192,7 @@
 	(zero_extend:DI (match_operand:SI 1 "riscv_mem_classic_operand" "")))
    (set (match_operand:DI 2 "register_operand" "")
 	(zero_extend:DI (match_operand:SI 3 "riscv_mem_classic_operand" "")))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[0]) != REGNO (operands[2])
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
@@ -1137,7 +1208,7 @@
 	(match_operand:SI 1 "riscv_mem_classic_operand" ""))
    (set (match_operand:SI 2 "register_operand" "")
 	(match_operand:SI 3 "riscv_mem_classic_operand" ""))]
-  "RISCV_TUNE_C908_P
+  "(RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[0]) != REGNO (operands[2])
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
@@ -1153,7 +1224,7 @@
 	(match_operand:DI 1 "register_operand" ""))
    (set (match_operand:DI 2 "riscv_mem_classic_operand" "")
 	(match_operand:DI 3 "register_operand" ""))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[1]) != REGNO (operands[3])
    && rtx_equal_p (XEXP (operands[2], 0),
 	plus_constant (Pmode, XEXP (operands[0], 0), GET_MODE_SIZE (DImode)))
@@ -1169,7 +1240,7 @@
 	(match_operand:SI 1 "register_operand" ""))
    (set (match_operand:SI 2 "riscv_mem_classic_operand" "")
 	(match_operand:SI 3 "register_operand" ""))]
-  "RISCV_TUNE_C908_P
+  "(RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && REGNO (operands[1]) != REGNO (operands[3])
    && rtx_equal_p (XEXP (operands[2], 0),
 	plus_constant (Pmode, XEXP (operands[0], 0), GET_MODE_SIZE (SImode)))
@@ -1187,7 +1258,7 @@
 	(match_operand:DI 1 "riscv_mem_classic_operand"  "m"))
    (set (match_operand:DI 2 "register_operand"           "=r")
 	(match_operand:DI 3 "riscv_mem_classic_operand"  "m"))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (DImode)))
    && GET_CODE (XEXP (operands[3], 0)) == PLUS
@@ -1204,7 +1275,7 @@
 	(sign_extend:DI (match_operand:SI 1 "riscv_mem_classic_operand"  "m")))
    (set (match_operand:DI                 2 "register_operand"           "=r")
 	(sign_extend:DI (match_operand:SI 3 "riscv_mem_classic_operand"  "m")))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
    && GET_CODE (XEXP (operands[3], 0)) == PLUS
@@ -1220,7 +1291,7 @@
 	(match_operand:SI 1 "riscv_mem_classic_operand"  "m"))
    (set (match_operand:SI 2 "register_operand"           "=r")
 	(match_operand:SI 3 "riscv_mem_classic_operand"  "m"))]
-  "RISCV_TUNE_C908_P
+  "(RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
    && REGNO (operands[0]) != REGNO (XEXP (XEXP (operands[3], 0), 0))
@@ -1236,7 +1307,7 @@
 	(zero_extend:DI (match_operand:SI 1 "riscv_mem_classic_operand"  "m")))
    (set (match_operand:DI                 2 "register_operand"           "=r")
 	(zero_extend:DI (match_operand:SI 3 "riscv_mem_classic_operand"  "m")))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[3], 0),
 	plus_constant (Pmode, XEXP (operands[1], 0), GET_MODE_SIZE (SImode)))
    && GET_CODE (XEXP (operands[3], 0)) == PLUS
@@ -1253,7 +1324,7 @@
 	(match_operand:DI 1 "register_operand"           "r"))
    (set (match_operand:DI 2 "riscv_mem_classic_operand"  "=m")
 	(match_operand:DI 3 "register_operand"           "r"))]
-  "TARGET_64BIT && RISCV_TUNE_C908_P
+  "TARGET_64BIT && (RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[2], 0),
 	plus_constant (Pmode, XEXP (operands[0], 0), GET_MODE_SIZE (DImode)))
    && GET_CODE (XEXP (operands[2], 0)) == PLUS
@@ -1270,7 +1341,7 @@
 	(match_operand:SI 1 "register_operand"           "r"))
    (set (match_operand:SI 2 "riscv_mem_classic_operand"  "=m")
 	(match_operand:SI 3 "register_operand"           "r"))]
-  "RISCV_TUNE_C908_P
+  "(RISCV_TUNE_C908_P || RISCV_TUNE_C907_P)
    && rtx_equal_p (XEXP (operands[2], 0),
 	plus_constant (Pmode, XEXP (operands[0], 0), GET_MODE_SIZE (SImode)))
    && GET_CODE (XEXP (operands[2], 0)) == PLUS

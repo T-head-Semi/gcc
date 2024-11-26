@@ -61,7 +61,7 @@ riscv_implied_info_t riscv_implied_info[] =
   {"zcd",  "zca"},
   {"zcb",  "zca"},
 
-  {"zvfbfmin", "zfbfmin"},
+  {"zvfbfmin", "v"},
   {"zvfbfwma", "zfbfmin"},
   {"zvfbfwma", "zvfbfmin"},
 
@@ -131,12 +131,18 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
 
-  {"zfh",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zfbfmin", ISA_SPEC_CLASS_NONE, 0, 8},
-  {"zvfbfmin", ISA_SPEC_CLASS_NONE, 0, 8},
-  {"zvfbfwma", ISA_SPEC_CLASS_NONE, 0, 8},
+  {"zicbom",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicbop",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicboz",   ISA_SPEC_CLASS_NONE, 1, 0},
 
-  {"zfa",     ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zfh",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zfbfmin", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvfbfmin", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvfbfwma", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zawrs",     ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfa",     ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvamo",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvlsseg", ISA_SPEC_CLASS_NONE, 1, 0},
 

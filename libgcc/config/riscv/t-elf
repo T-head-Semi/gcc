@@ -3,6 +3,9 @@ LIB2ADD += $(srcdir)/config/riscv/save-restore.S \
 	   $(srcdir)/config/riscv/multi3.c \
 	   $(srcdir)/config/riscv/div.S \
 	   $(srcdir)/config/riscv/atomic.c \
+	   $(srcdir)/config/riscv/unaligned-libcall.c
+
+HOST_LIBGCC2_CFLAGS += -mno-unaligned-libcall
 
 LIB_TF_FUNCS = addtf3 subtf3 multf3 divtf3 \
 	       eqtf2 getf2 letf2 \

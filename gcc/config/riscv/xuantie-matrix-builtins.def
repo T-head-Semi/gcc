@@ -1,0 +1,303 @@
+#define RISCV_TH_NAMED(INSN, NAME, BUILTIN_TYPE, FUNCTION_TYPE, AVAIL)		\
+  { CODE_FOR_ ## INSN, "__riscv_th_" NAME, BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL, NULL}
+
+#define DIRECT_TH_NAMED(INSN, NAME, FUNCTION_TYPE, AVAIL)			\
+  RISCV_TH_NAMED (INSN, #NAME, RISCV_BUILTIN_DIRECT, FUNCTION_TYPE, AVAIL)
+
+#define DIRECT_TH_NAMED_NO_TARGET(INSN, NAME, FUNCTION_TYPE, AVAIL)			\
+  RISCV_TH_NAMED (INSN, #NAME, RISCV_BUILTIN_DIRECT_NO_TARGET, FUNCTION_TYPE, AVAIL)
+
+#define RISCV_TH_NAMED_WITH_CHECKER(INSN, NAME, BUILTIN_TYPE, FUNCTION_TYPE, AVAIL, CHECKER)	\
+  { CODE_FOR_ ## INSN, "__riscv_th_" NAME,			\
+    BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL, check_ ## CHECKER}
+
+#define DIRECT_TH_NAMED_WITH_CHECKER(INSN, NAME, FUNCTION_TYPE, AVAIL, CHECKER)			\
+  RISCV_TH_NAMED_WITH_CHECKER (INSN, #NAME, RISCV_BUILTIN_DIRECT, FUNCTION_TYPE, AVAIL, CHECKER)
+
+DIRECT_NAMED(matrix_mcfgmdi, msetmrow_m, RISCV_UDI_FTYPE_UDI, matrix_rv64),
+DIRECT_NAMED(matrix_mcfgndi, msetmrow_n, RISCV_UDI_FTYPE_UDI, matrix_rv64),
+DIRECT_NAMED(matrix_mcfgkdi, msetmcol, RISCV_UDI_FTYPE_UDI, matrix_rv64),
+
+DIRECT_NAMED(matrix_mcfgmsi, msetmrow_m, RISCV_USI_FTYPE_USI, matrix_rv32),
+DIRECT_NAMED(matrix_mcfgnsi, msetmrow_n, RISCV_USI_FTYPE_USI, matrix_rv32),
+DIRECT_NAMED(matrix_mcfgksi, msetmcol, RISCV_USI_FTYPE_USI, matrix_rv32),
+
+DIRECT_TH_NAMED(matrix_read_xmlenb, xmlenb, RISCV_USI_FTYPE, matrix_rv32),
+DIRECT_TH_NAMED(matrix_read_xmlenb, xmlenb, RISCV_UDI_FTYPE, matrix_rv64),
+DIRECT_TH_NAMED(matrix_read_xrlenbsi, xrlenb, RISCV_USI_FTYPE, matrix_rv32),
+DIRECT_TH_NAMED(matrix_read_xrlenbdi, xrlenb, RISCV_UDI_FTYPE, matrix_rv64),
+DIRECT_TH_NAMED(matrix_read_xmsizesi, xmsize, RISCV_USI_FTYPE, matrix_rv32),
+DIRECT_TH_NAMED(matrix_read_xmsizedi, xmsize, RISCV_UDI_FTYPE, matrix_rv64),
+
+DIRECT_TH_NAMED_NO_TARGET(matrix_mrelease, mrelease, RISCV_VOID_FTYPE, matrix),
+
+#define __MATRIX_ALL_TYPE_ITERATOR(MACRO, ...)		\
+  MACRO(di, i64,  DI, __VA_ARGS__)		\
+  MACRO(si, i32,  SI, __VA_ARGS__)		\
+  MACRO(hi, i16,  HI, __VA_ARGS__)		\
+  MACRO(qi, i8,   QI, __VA_ARGS__)		\
+  MACRO(di, u64, UDI, __VA_ARGS__)		\
+  MACRO(si, u32, USI, __VA_ARGS__)		\
+  MACRO(hi, u16, UHI, __VA_ARGS__)		\
+  MACRO(qi, u8,  UQI, __VA_ARGS__)		\
+  MACRO(df, f64,  DF, __VA_ARGS__)		\
+  MACRO(sf, f32,  SF, __VA_ARGS__)		\
+  MACRO(hf, f16,  HF, __VA_ARGS__)
+
+#define __MATRIX_ZERO_DIRECT(mode, type, TYPE, lmul)								\
+  DIRECT_TH_NAMED(matrix_mzerorvmm1##mode, mzero_##type, RISCV_RVMM##lmul##TYPE##_FTYPE, matrix),
+
+#define __MATRIX_ZERO_DIRECT_X(mode, type, TYPE, lmul)								\
+  DIRECT_TH_NAMED(matrix_mzerorvmm##lmul##mode, mzero_##type##x##lmul, RISCV_RVMM##lmul##TYPE##_FTYPE, matrix),
+
+__MATRIX_ALL_TYPE_ITERATOR(__MATRIX_ZERO_DIRECT, 1)
+__MATRIX_ALL_TYPE_ITERATOR(__MATRIX_ZERO_DIRECT_X, 2)
+__MATRIX_ALL_TYPE_ITERATOR(__MATRIX_ZERO_DIRECT_X, 4)
+__MATRIX_ALL_TYPE_ITERATOR(__MATRIX_ZERO_DIRECT_X, 8)
+
+#define __MATRIX_LOAD_AND_STORE_DIRECT(mode, type, RETURN, ARGS)									\
+  DIRECT_TH_NAMED (matrix_mld## mode ##di, mld_##type, RISCV_## RETURN ##_FTYPE_## ARGS ##_DI_UDI_UDI, matrix_rv64),			\
+  DIRECT_TH_NAMED_NO_TARGET (matrix_mst## mode ##di, mst_##type, RISCV_VOID_FTYPE_## ARGS ##_DI_## RETURN ##_UDI_UDI, matrix_rv64),	\
+  DIRECT_TH_NAMED (matrix_msld## mode ##di, msld_##type, RISCV_## RETURN ##_FTYPE_## ARGS ##_DI_UDI_UDI, matrix_rv64),			\
+  DIRECT_TH_NAMED_NO_TARGET (matrix_msst## mode ##di, msst_##type, RISCV_VOID_FTYPE_## ARGS ##_DI_## RETURN ##_UDI_UDI, matrix_rv64),	\
+  DIRECT_TH_NAMED (matrix_mld## mode ##si, mld_##type, RISCV_## RETURN ##_FTYPE_## ARGS ##_SI_USI_USI, matrix_rv32),			\
+  DIRECT_TH_NAMED_NO_TARGET (matrix_mst## mode ##si, mst_##type, RISCV_VOID_FTYPE_## ARGS ##_SI_## RETURN ##_USI_USI, matrix_rv32),	\
+  DIRECT_TH_NAMED (matrix_msld## mode ##si, msld_##type, RISCV_## RETURN ##_FTYPE_## ARGS ##_SI_USI_USI, matrix_rv32),                    \
+  DIRECT_TH_NAMED_NO_TARGET (matrix_msst## mode ##si, msst_##type, RISCV_VOID_FTYPE_## ARGS ##_SI_## RETURN ##_USI_USI, matrix_rv32),
+
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1di, i64, RVMM1DI, C_DI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1si, i32, RVMM1SI, C_SI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1hi, i16, RVMM1HI, C_HI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1qi, i8, RVMM1QI, C_QI_PTR)
+
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1di, u64, RVMM1UDI, C_UDI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1si, u32, RVMM1USI, C_USI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1hi, u16, RVMM1UHI, C_UHI_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1qi, u8, RVMM1UQI, C_UQI_PTR)
+
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1df, f64, RVMM1DF, C_DF_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1sf, f32, RVMM1SF, C_SF_PTR)
+__MATRIX_LOAD_AND_STORE_DIRECT(rvmm1hf, f16, RVMM1HF, C_HF_PTR)
+
+#define __MATRIX_INT_ITERATOR(MACRO, ...)			\
+  MACRO(rvmm1qi, i8,  QI, QI, __VA_ARGS__)			\
+  MACRO(rvmm1hi, i16, HI, HI, __VA_ARGS__)			\
+  MACRO(rvmm1si, i32, SI, SI, __VA_ARGS__)			\
+  MACRO(rvmm1di, i64, DI, DI, __VA_ARGS__)			\
+  MACRO(rvmm1qi, u8,  UQI, UQI, __VA_ARGS__)			\
+  MACRO(rvmm1hi, u16, UHI, UHI, __VA_ARGS__)			\
+  MACRO(rvmm1si, u32, USI, USI, __VA_ARGS__)			\
+  MACRO(rvmm1di, u64, UDI, UDI, __VA_ARGS__)
+
+#define __MATRIX_INT_ITERATOR_RV32(MACRO, ...)			\
+  MACRO(rvmm1qi, i8,  QI, QI, __VA_ARGS__)			\
+  MACRO(rvmm1hi, i16, HI, HI, __VA_ARGS__)			\
+  MACRO(rvmm1si, i32, SI, SI, __VA_ARGS__)			\
+  MACRO(rvmm1qi, u8,  UQI, UQI, __VA_ARGS__)			\
+  MACRO(rvmm1hi, u16, UHI, UHI, __VA_ARGS__)			\
+  MACRO(rvmm1si, u32, USI, USI, __VA_ARGS__)
+
+#define __MATRIX_MOV_DIRECT(mode, type, RETURN, ARGS, instr)										\
+  DIRECT_TH_NAMED (mov## mode,	     mmov_mm_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN, matrix),				\
+  DIRECT_TH_NAMED (matrix_mmov_mv## mode,  mmov_mv_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_UQI, matrix),			\
+  DIRECT_TH_NAMED (matrix_mmov_m_x## mode, mmov_m_x_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_## ARGS ##_UQI, matrix_rv64),	\
+  DIRECT_TH_NAMED (matrix_mmov_x_m## mode, mmov_x_m_## type, RISCV_## ARGS ##_FTYPE_RVMM1## RETURN ##_UQI, matrix_rv64),			\
+  DIRECT_TH_NAMED (matrix_mdup_m_x## mode, mdup_m_x_## type, RISCV_RVMM1## RETURN ##_FTYPE_## ARGS, matrix_rv64),
+
+__MATRIX_INT_ITERATOR(__MATRIX_MOV_DIRECT, mmov)
+
+#define __MATRIX_MOV_DIRECT_RV32(mode, type, RETURN, ARGS, instr)										\
+  DIRECT_TH_NAMED (matrix_mmov_m_x## mode, mmov_m_x_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_## ARGS ##_UQI, matrix_rv32),	\
+  DIRECT_TH_NAMED (matrix_mmov_x_m## mode, mmov_x_m_## type, RISCV_## ARGS ##_FTYPE_RVMM1## RETURN ##_UQI, matrix_rv32),			\
+  DIRECT_TH_NAMED (matrix_mdup_m_x## mode, mdup_m_x_## type, RISCV_RVMM1## RETURN ##_FTYPE_## ARGS, matrix_rv32),
+
+__MATRIX_INT_ITERATOR_RV32(__MATRIX_MOV_DIRECT_RV32, mmov)
+
+#define __MATRIX_FLOAT_ITERATOR(MACRO, ...)			\
+  MACRO(rvmm1hf, f16, HF, HF, __VA_ARGS__)			\
+  MACRO(rvmm1sf, f32, SF, SF, __VA_ARGS__)			\
+  MACRO(rvmm1df, f64, DF, DF, __VA_ARGS__)
+
+#define __MATRIX_MOV_FLAOT_DIRECT(mode, type, RETURN, ARGS, instr)										\
+  DIRECT_TH_NAMED (mov## mode,	     mmov_mm_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN, matrix),				\
+  DIRECT_TH_NAMED (matrix_mmov_mv## mode,  mmov_mv_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_UQI, matrix),
+
+__MATRIX_FLOAT_ITERATOR(__MATRIX_MOV_FLAOT_DIRECT, mmov)
+
+#define __MATRIX_SD_BULITINS_ITERATOR(MACRO, ...)			\
+  MACRO(rvmm1si, i32, SI, SI, __VA_ARGS__)				\
+  MACRO(rvmm1di, i64, DI, DI, __VA_ARGS__)				\
+  MACRO(rvmm1si, u32, USI, USI, __VA_ARGS__)				\
+  MACRO(rvmm1di, u64, UDI, UDI, __VA_ARGS__)
+
+#define __MATRIX_S_BULITINS_ITERATOR(MACRO, ...)			\
+  MACRO(rvmm1si, i32, SI, SI, __VA_ARGS__)				\
+  MACRO(rvmm1si, u32, USI, USI, __VA_ARGS__)
+
+#define __MATRIX_AUL_DIRECT(mode, type, RETURN, ARGS, instr)													\
+  DIRECT_TH_NAMED (matrix_## instr ##_mm## mode ##di, instr ##_mm_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_RVMM1##  RETURN ##_UDI_UDI, matrix_rv64),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mv## mode ##di, instr ##_mv_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_RVMM1##  RETURN ##_UQI_UDI_UDI, matrix_rv64),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mx## mode ##di, instr ##_mx_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_## ARGS ##_UDI_UDI, matrix_rv64),                      \
+  \
+  DIRECT_TH_NAMED (matrix_## instr ##_mm## mode ##si, instr ##_mm_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_RVMM1##  RETURN ##_USI_USI, matrix_rv32),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mv## mode ##si, instr ##_mv_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_RVMM1##  RETURN ##_UQI_USI_USI, matrix_rv32),		\
+
+__MATRIX_SD_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT, madd)
+__MATRIX_SD_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT, msub)
+__MATRIX_SD_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT, mmul)
+__MATRIX_SD_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT, mmulh)
+
+#define __MATRIX_AUL_DIRECT_RV32(mode, type, RETURN, ARGS, instr)													\
+  DIRECT_TH_NAMED (matrix_## instr ##_mx## mode ##si, instr ##_mx_## type, RISCV_RVMM1## RETURN ##_FTYPE_RVMM1## RETURN ##_## ARGS ##_USI_USI, matrix_rv32),
+
+__MATRIX_S_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT_RV32, madd)
+__MATRIX_S_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT_RV32, msub)
+__MATRIX_S_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT_RV32, mmul)
+__MATRIX_S_BULITINS_ITERATOR(__MATRIX_AUL_DIRECT_RV32, mmulh)
+
+#define __MATRIX_SHIFT_DIRECT(instr, mode, type, RETURN, ARGS1, ARGS2)									\
+  DIRECT_TH_NAMED (matrix_## instr ##_mm## mode ##di, instr ##_mm_## type, RISCV_## RETURN ##_FTYPE_## ARGS1 ##_UDI_UDI, matrix_rv64),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mv## mode ##di, instr ##_mv_## type, RISCV_## RETURN ##_FTYPE_## ARGS1 ##_UQI_UDI_UDI, matrix_rv64),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mx## mode ##di, instr ##_mx_## type, RISCV_## RETURN ##_FTYPE_## ARGS2 ##_UDI_UDI, matrix_rv64),            \
+  \
+  DIRECT_TH_NAMED (matrix_## instr ##_mm## mode ##si, instr ##_mm_## type, RISCV_## RETURN ##_FTYPE_## ARGS1 ##_USI_USI, matrix_rv32),		\
+  DIRECT_TH_NAMED (matrix_## instr ##_mv## mode ##si, instr ##_mv_## type, RISCV_## RETURN ##_FTYPE_## ARGS1 ##_UQI_USI_USI, matrix_rv32),		\
+
+
+__MATRIX_SHIFT_DIRECT(msra, rvmm1si, i32, RVMM1SI, RVMM1SI_RVMM1USI, RVMM1SI_USI)
+__MATRIX_SHIFT_DIRECT(msra, rvmm1di, i64, RVMM1DI, RVMM1DI_RVMM1UDI, RVMM1DI_UDI)
+
+__MATRIX_SHIFT_DIRECT(mn4clip, rvmm1si, i32, RVMM1QI, RVMM1SI_RVMM1USI, RVMM1SI_USI)
+__MATRIX_SHIFT_DIRECT(mn4clip, rvmm1di, i64, RVMM1QI, RVMM1DI_RVMM1UDI, RVMM1DI_UDI)
+
+__MATRIX_SHIFT_DIRECT(mn4clipu, rvmm1si, u32, RVMM1UQI, RVMM1USI_RVMM1USI, RVMM1USI_USI)
+__MATRIX_SHIFT_DIRECT(mn4clipu, rvmm1di, u64, RVMM1UQI, RVMM1UDI_RVMM1UDI, RVMM1UDI_UDI)
+
+#define __MATRIX_SHIFT_DIRECT_RV32(instr, mode, type, RETURN, ARGS1, ARGS2)									\
+  DIRECT_TH_NAMED (matrix_## instr ##_mx## mode ##si, instr ##_mx_## type, RISCV_## RETURN ##_FTYPE_## ARGS2 ##_USI_USI, matrix_rv32),
+
+__MATRIX_SHIFT_DIRECT_RV32(msra, rvmm1si, i32, RVMM1SI, RVMM1SI_RVMM1USI, RVMM1SI_USI)
+__MATRIX_SHIFT_DIRECT_RV32(mn4clip, rvmm1si, i32, RVMM1QI, RVMM1SI_RVMM1USI, RVMM1SI_USI)
+__MATRIX_SHIFT_DIRECT_RV32(mn4clipu, rvmm1si, u32, RVMM1UQI, RVMM1USI_RVMM1USI, RVMM1USI_USI)
+
+DIRECT_TH_NAMED (matrix_fmmacc_hdi, fmmacc_f16, RISCV_RVMM1HF_FTYPE_RVMM1HF_RVMM1HF_RVMM2HF_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_fmmacc_sdi, fmmacc_f32, RISCV_RVMM1SF_FTYPE_RVMM1SF_RVMM1SF_RVMM1SF_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_fmmacc_ddi, fmmacc_f64x2, RISCV_RVMM2DF_FTYPE_RVMM2DF_RVMM1DF_RVMM1DF_UDI_UDI_UDI, matrix_rv64),
+
+DIRECT_TH_NAMED (matrix_fwmmacc_hdi, fwmmacc_f32, RISCV_RVMM1SF_FTYPE_RVMM1SF_RVMM1HF_RVMM1HF_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_fwmmacc_sdi, fwmmacc_f64x2, RISCV_RVMM2DF_FTYPE_RVMM2DF_RVMM1SF_RVMM1SF_UDI_UDI_UDI, matrix_rv64),
+
+DIRECT_TH_NAMED (matrix_mmaqa_bdi,   mmaqa_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1QI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqa_hdi,   mmaqa_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1HI_RVMM1HI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqau_bdi,  mmaqau_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1UQI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqau_hdi,  mmaqau_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1UHI_RVMM1UHI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqaus_bdi, mmaqaus_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1QI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqaus_hdi, mmaqaus_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1UHI_RVMM1HI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqasu_bdi, mmaqasu_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1UQI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_mmaqasu_hdi, mmaqasu_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1HI_RVMM1UHI_UDI_UDI_UDI, matrix_rv64),
+
+DIRECT_TH_NAMED (matrix_pmmaqa_bdi,   pmmaqa_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1QI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_pmmaqau_bdi,  pmmaqau_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1UQI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_pmmaqaus_bdi, pmmaqaus_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1QI_UDI_UDI_UDI, matrix_rv64),
+DIRECT_TH_NAMED (matrix_pmmaqasu_bdi, pmmaqasu_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1UQI_UDI_UDI_UDI, matrix_rv64),
+
+
+DIRECT_TH_NAMED (matrix_fmmacc_hsi, fmmacc_f16, RISCV_RVMM1HF_FTYPE_RVMM1HF_RVMM1HF_RVMM2HF_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_fmmacc_ssi, fmmacc_f32, RISCV_RVMM1SF_FTYPE_RVMM1SF_RVMM1SF_RVMM1SF_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_fmmacc_dsi, fmmacc_f64x2, RISCV_RVMM2DF_FTYPE_RVMM2DF_RVMM1DF_RVMM1DF_USI_USI_USI, matrix_rv32),
+
+DIRECT_TH_NAMED (matrix_fwmmacc_hsi, fwmmacc_f32, RISCV_RVMM1SF_FTYPE_RVMM1SF_RVMM1HF_RVMM1HF_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_fwmmacc_ssi, fwmmacc_f64x2, RISCV_RVMM2DF_FTYPE_RVMM2DF_RVMM1SF_RVMM1SF_USI_USI_USI, matrix_rv32),
+
+DIRECT_TH_NAMED (matrix_mmaqa_bsi,   mmaqa_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1QI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqa_hsi,   mmaqa_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1HI_RVMM1HI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqau_bsi,  mmaqau_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1UQI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqau_hsi,  mmaqau_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1UHI_RVMM1UHI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqaus_bsi, mmaqaus_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1QI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqaus_hsi, mmaqaus_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1UHI_RVMM1HI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqasu_bsi, mmaqasu_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1UQI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_mmaqasu_hsi, mmaqasu_i64x2, RISCV_RVMM2DI_FTYPE_RVMM2DI_RVMM1HI_RVMM1UHI_USI_USI_USI, matrix_rv32),
+
+DIRECT_TH_NAMED (matrix_pmmaqa_bsi,   pmmaqa_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1QI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_pmmaqau_bsi,  pmmaqau_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1UQI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_pmmaqaus_bsi, pmmaqaus_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1UQI_RVMM1QI_USI_USI_USI, matrix_rv32),
+DIRECT_TH_NAMED (matrix_pmmaqasu_bsi, pmmaqasu_i32, RISCV_RVMM1SI_FTYPE_RVMM1SI_RVMM1QI_RVMM1UQI_USI_USI_USI, matrix_rv32),
+
+/* Matrix mreinterpret.  */
+#define __MATRIX_MREINTERPRET_DIRECT(mode, type, ARGS)							\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1qi##mode, mreinterpret_i8_##type,  RISCV_RVMM1QI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1hi##mode, mreinterpret_i16_##type, RISCV_RVMM1HI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1si##mode, mreinterpret_i32_##type, RISCV_RVMM1SI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1di##mode, mreinterpret_i64_##type, RISCV_RVMM1DI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1qi##mode, mreinterpret_u8_##type,  RISCV_RVMM1UQI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1hi##mode, mreinterpret_u16_##type, RISCV_RVMM1UHI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1si##mode, mreinterpret_u32_##type, RISCV_RVMM1USI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1di##mode, mreinterpret_u64_##type, RISCV_RVMM1UDI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1hf##mode, mreinterpret_f16_##type, RISCV_RVMM1HF_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1sf##mode, mreinterpret_f32_##type, RISCV_RVMM1SF_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm1df##mode, mreinterpret_f64_##type, RISCV_RVMM1DF_FTYPE_## ARGS, matrix),
+
+#define __MATRIX_MREINTERPRET_ITERATOR(MACRO, ...)		\
+  MACRO(rvmm1qi, i8 , RVMM1QI)					\
+  MACRO(rvmm1hi, i16, RVMM1HI)					\
+  MACRO(rvmm1si, i32, RVMM1SI)					\
+  MACRO(rvmm1di, i64, RVMM1DI)					\
+  MACRO(rvmm1qi, u8 , RVMM1UQI)					\
+  MACRO(rvmm1hi, u16, RVMM1UHI)					\
+  MACRO(rvmm1si, u32, RVMM1USI)					\
+  MACRO(rvmm1di, u64, RVMM1UDI)					\
+  MACRO(rvmm1hf, f16, RVMM1HF)					\
+  MACRO(rvmm1sf, f32, RVMM1SF)					\
+  MACRO(rvmm1df, f64, RVMM1DF)
+
+__MATRIX_MREINTERPRET_ITERATOR(__MATRIX_MREINTERPRET_DIRECT)
+
+#define __MATRIX_MREINTERPRET_X2_DIRECT(mode, type, ARGS)							\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2qi##mode, mreinterpret_i8x2_##type,  RISCV_RVMM2QI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2hi##mode, mreinterpret_i16x2_##type, RISCV_RVMM2HI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2si##mode, mreinterpret_i32x2_##type, RISCV_RVMM2SI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2di##mode, mreinterpret_i64x2_##type, RISCV_RVMM2DI_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2qi##mode, mreinterpret_u8x2_##type,  RISCV_RVMM2UQI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2hi##mode, mreinterpret_u16x2_##type, RISCV_RVMM2UHI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2si##mode, mreinterpret_u32x2_##type, RISCV_RVMM2USI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2di##mode, mreinterpret_u64x2_##type, RISCV_RVMM2UDI_FTYPE_## ARGS,  matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2hf##mode, mreinterpret_f16x2_##type, RISCV_RVMM2HF_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2sf##mode, mreinterpret_f32x2_##type, RISCV_RVMM2SF_FTYPE_## ARGS, matrix),	\
+  DIRECT_TH_NAMED (matrix_mreinterpret_mrvmm2df##mode, mreinterpret_f64x2_##type, RISCV_RVMM2DF_FTYPE_## ARGS, matrix),
+
+#define __MATRIX_MREINTERPRET_X2_ITERATOR(MACRO, ...)		\
+  MACRO(rvmm2qi, i8x2 , RVMM2QI)					\
+  MACRO(rvmm2hi, i16x2, RVMM2HI)					\
+  MACRO(rvmm2si, i32x2, RVMM2SI)					\
+  MACRO(rvmm2di, i64x2, RVMM2DI)					\
+  MACRO(rvmm2qi, u8x2 , RVMM2UQI)					\
+  MACRO(rvmm2hi, u16x2, RVMM2UHI)					\
+  MACRO(rvmm2si, u32x2, RVMM2USI)					\
+  MACRO(rvmm2di, u64x2, RVMM2UDI)					\
+  MACRO(rvmm2hf, f16x2, RVMM2HF)					\
+  MACRO(rvmm2sf, f32x2, RVMM2SF)					\
+  MACRO(rvmm2df, f64x2, RVMM2DF)
+
+__MATRIX_MREINTERPRET_X2_ITERATOR(__MATRIX_MREINTERPRET_X2_DIRECT,)
+
+/* Matrix tuple.  */
+#define __MATRIX_TUPLE_DIRECT(mode, type, RETURN, ARGS)									\
+DIRECT_TH_NAMED_WITH_CHECKER (matrix_mset##mode, mset_##type, RISCV_## RETURN ##_FTYPE_## RETURN ##_SI_## ARGS, matrix_rv32, matrix_tuple_check),	\
+DIRECT_TH_NAMED_WITH_CHECKER (matrix_mset##mode, mset_##type, RISCV_## RETURN ##_FTYPE_## RETURN ##_DI_## ARGS, matrix_rv64, matrix_tuple_check),	\
+DIRECT_TH_NAMED_WITH_CHECKER (matrix_mget##mode, mget_##type, RISCV_## ARGS ##_FTYPE_## RETURN ##_SI, matrix_rv32, matrix_tuple_check),			\
+DIRECT_TH_NAMED_WITH_CHECKER (matrix_mget##mode, mget_##type, RISCV_## ARGS ##_FTYPE_## RETURN ##_DI, matrix_rv64, matrix_tuple_check),
+
+#define __MATRIX_TUPLE_ITERATOR(MACRO, ...)			\
+  MACRO(rvmm2qi, i8x2,  RVMM2QI, RVMM1QI)			\
+  MACRO(rvmm2hi, i16x2, RVMM2HI, RVMM1HI)			\
+  MACRO(rvmm2si, i32x2, RVMM2SI, RVMM1SI)			\
+  MACRO(rvmm2di, i64x2, RVMM2DI, RVMM1DI)			\
+  MACRO(rvmm2qi, u8x2,  RVMM2UQI, RVMM1UQI)			\
+  MACRO(rvmm2hi, u16x2, RVMM2UHI, RVMM1UHI)			\
+  MACRO(rvmm2si, u32x2, RVMM2USI, RVMM1USI)			\
+  MACRO(rvmm2di, u64x2, RVMM2UDI, RVMM1UDI)			\
+  MACRO(rvmm2hf, f16x2, RVMM2HF, RVMM1HF)			\
+  MACRO(rvmm2sf, f32x2, RVMM2SF, RVMM1SF)			\
+  MACRO(rvmm2df, f64x2, RVMM2DF, RVMM1DF)			\
+
+__MATRIX_TUPLE_ITERATOR(__MATRIX_TUPLE_DIRECT, )

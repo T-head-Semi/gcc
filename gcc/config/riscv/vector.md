@@ -948,7 +948,7 @@
 	emit_insn (gen_vsetvlmax<vlmode>_di (gen_reg_rtx (Pmode)));
       else
 	emit_insn (gen_vsetvlmax<vlmode>_si (gen_reg_rtx (Pmode)));
-      emit_insn (gen_vec_duplicate<mode>_nosetvl (operands[0], tmp_reg));
+      emit_insn (gen_vec_duplicate<mode> (operands[0], tmp_reg));
       DONE;
     }
 
@@ -5448,9 +5448,14 @@
 	      (use (reg:<VLMODE> VTYPE_REGNUM))])]
   "TARGET_VECTOR"
 {
+  if (!TARGET_64BIT && GET_MODE_SIZE (<VSUBMODE>mode) > GET_MODE_SIZE (SImode))
+    {
+      emit_insn (gen_vec_store_di_to_<mode>_rv32 (operands[0], operands[1]));
+      DONE;
+    }
 })
 
-(define_insn "vec_duplicate<mode>_nosetvl"
+(define_insn "*vec_duplicate<mode>_nosetvl"
   [(set (match_operand:VIMODES 0 "register_operand" "=vr,vr")
 	(unspec:VIMODES
 	  [(vec_duplicate:VIMODES
@@ -5480,7 +5485,7 @@
 {
 })
 
-(define_insn "vec_duplicate<mode>_nosetvl"
+(define_insn "*vec_duplicate<mode>_nosetvl"
   [(set (match_operand:VFMODES 0 "register_operand" "=vr,*vr")
 	(unspec:VFMODES
 	  [(vec_duplicate:VFMODES

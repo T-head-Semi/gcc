@@ -1,0 +1,43 @@
+/* { dg-do run } */
+/* { dg-skip-if "test rv32 matrix" { *-*-* } { "*" } { "-march=rv32*xtheadmatrix*" } } */
+
+
+#include <stdio.h>
+#include "rvm_common.h"
+#define N 8
+#define MROW 4
+#define MCOL 2
+#define STRIDE 16
+
+void
+print_data (mint64_t ma)
+{
+  int64_t tmp_ma[N] = {-1, -1, -1, -1, -1, -1, -1, -1};
+
+  __riscv_th_mst (tmp_ma, STRIDE, ma, MROW, MCOL);
+  for (int i=0;i<N;i++)
+    printf ("0x%0llx ", tmp_ma[i]);
+
+  printf ("\n");
+}
+
+void test (int64_t value)
+{
+  int64_t date[8] = {0x100, 0x101, 0x0102, 0x103, 0x104, 0x105, 0x106, 0x107};
+  mint64_t src = __riscv_th_mld (date, STRIDE, MROW, MCOL);
+  mint64_t ans = __riscv_th_mmul_mx (src, value, MROW, MCOL);
+  print_data (ans);        
+}
+
+
+int main ()
+{
+  /* init data */
+  uint64_t src = (uint64_t)0x10000000101;
+
+  test (src);
+  
+  return 0;
+}
+
+/* { dg-output "0x1000000010100 0x1010000010201 0x1020000010302 0x1030000010403 0x1040000010504 0x1050000010605 0x1060000010706 0x1070000010807 \r\n" } */

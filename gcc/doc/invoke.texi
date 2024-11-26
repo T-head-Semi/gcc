@@ -25519,6 +25519,23 @@ width as the alignment value, and @samp{natural} which uses natural alignment.
 @samp{xlen} is the default.
 @end table
 
+@subsubsection Xuantie Options
+
+@table @gcctabopt
+
+@item -munaligned-libcall
+@itemx -mno-unaligned-libcall
+Use or do not use library functions to access unaligned memory for CPUs that
+do not support unaligned memory access to reduce code size.
+For the Xuantie E series CPU, this option is enabled by default on -Os.
+
+@item -mccrt
+@itemx -mno-ccrt
+Use or do not use libcc-rt to instand of libgcc for runtime functions to
+reduce code size. It's only available for the Xuantie E series CPU.
+The default is not to use libcc-rt.
+@end table
+
 @node RL78 Options
 @subsection RL78 Options
 @cindex RL78 Options
